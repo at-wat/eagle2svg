@@ -104,51 +104,48 @@ def render_text(text, xy, size, color,
         align = 'start',
         valign = 0.0):
 
-    rot = xy.rot
+    size = size * 1.25
+
+    anchor = align
     if xy.rot >= 180:
-        if not mirror_text:
-            xy.mirror = not xy.mirror
-        ang = math.radians(xy.rot)
-        ang = ang + math.pi / 2
-        sin = math.sin(ang)
-        cos = math.cos(ang)
-        xy.x = xy.x + cos * size
-        xy.y = xy.y + sin * size
-    if xy.rot >= 90 and 270 > xy.rot:
+        anchor = align_mirror(anchor)
+        valign = 1.0 - valign
         xy.rot = xy.rot - 180
 
     transforms = ''
     transforms = transforms + ' translate(%f %f)' % (xy.x, -xy.y)
-    transforms = transforms + ' rotate(%f 0 0)' % (xy.rot)
-    anchor = align
-    if mirror_text:
-        if xy.mirror:
+    if xy.mirror:
+        if mirror_text:
             transforms = transforms + ' scale(-1 1)'
-        if rot >= 180:
+        else:
             anchor = align_mirror(anchor)
-    else:
-        if xy.mirror:
-            anchor = align_mirror(anchor)
+    transforms = transforms + ' rotate(%f 0 0)' % (-xy.rot)
 
     text_option = ''
-    lines = text.split('\n')
+    lines = str(text).split('\n')
     if len(lines) <= 1:
         text2 = text
         height = size
         text_option = ' text-anchor="%s"' % anchor
     else:
         text2 = ''
-        y2 = 0.0
-
+        y2 = -len(lines) * size
+        len_max = 0
         for line in lines:
+            y2 = y2 + size
             text2 = text2 + '<tspan x="0" y="%f" height="%f" text-anchor="%s">' % (
                     y2, size, align) + line + '</tspan>'
-            y2 = y2 + size
-        height = y2
-        text_option = ' height="0" width="0"'
+            if len_max < len(line):
+                len_max = len(line)
+        height = len(lines) * size
+        if anchor == 'start':
+            transforms = transforms + ' translate(%f 0)' % (len_max * size * 0.65)
+        elif anchor == 'end':
+            transforms = transforms + ' translate(%f 0)' % (-len_max * size * 0.65)
+        text_option = ' height="%f" text-anchor="%s"' % (height, anchor)
     
     if valign != 0.0:
-        transforms = transforms + ' translate(0 %f)' % (-height * valign)
+        transforms = transforms + ' translate(0 %f)' % (height * valign)
 
     return '<text fill="%s" font-size="%f" transform="%s"%s>%s</text>' % (
             color, size,
@@ -472,7 +469,7 @@ class Text(object):
             align = data['@align'].split('-')
             if align[0] == 'top':
                 self.valign = 1.0
-            elif align[0] == 'top':
+            elif align[0] == 'bottom':
                 self.valign = 0.0
             else:
                 self.valign = 0.5
@@ -562,16 +559,19 @@ class Pin(object):
                 xy1.x, -xy1.y, xy2.x, -xy2.y)
 
         if self.visible == 'pin' or self.visible == 'both':
-            xy = Vec2r(PIN_LENGTH[self.length] + 1.5, -0.5)
+            xy = Vec2r(PIN_LENGTH[self.length] + 1.5, 0.0)
             rotate_text(xy, Vec2r(self.x, self.y), self.rot, self.mirror)
             rotate_text(xy, Vec2r(x, y), rot, mirror)
+            xy.y = xy.y + 0.5
             yield render_text(self.name, xy, 2.0, 'gray', valign = 0.5)
 
         if self.visible == 'pad' or self.visible == 'both':
-            xy = Vec2r(1.0, 0.0)
+            xy = Vec2r(1.5, 0.0)
             rotate_text(xy, Vec2r(self.x, self.y), self.rot, self.mirror)
             rotate_text(xy, Vec2r(x, y), rot, mirror)
-            yield render_text(connects[self.name].pad, xy, 1.5, 'gray')
+            xy.y += 1.5
+            yield render_text(connects[self.name].pad, xy, 1.5, 'gray',
+                    align = 'middle', valign = 0.5)
 
 
 class Frame(object):
