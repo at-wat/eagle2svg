@@ -6,6 +6,7 @@ import eagle_types
 
 COLOR = {
         1: 'maroon',
+        15: 'gray',
         16: 'navy',
         17: 'green',
         18: 'green',
@@ -15,8 +16,6 @@ COLOR = {
         22: 'gray',
         25: 'gray',
         26: 'gray',
-        29: 'gray',
-        30: 'gray',
         91: 'green',
         92: 'navy',
         93: 'maroon',
@@ -25,6 +24,10 @@ COLOR = {
         96: 'gray',
         97: 'gray',
         104: 'gray'
+        }
+COLOR_MIRROR = {
+        1: 16,
+        16: 1
         }
 
 PIN_LENGTH = {
@@ -51,6 +54,13 @@ def rotate(xy, trans, rot, mirror = False):
     xy.x = orig.x * cos - orig.y * sin + trans.x
     xy.y = orig.x * sin + orig.y * cos + trans.y
 
+def align_mirror(align):
+    if align == 'start':
+        return 'end'
+    elif align == 'end':
+        return 'start'
+    return align
+
 def rotate_text(xy, trans, rot, mirror = False):
     orig = copy.deepcopy(xy)
     ang = math.radians(rot)
@@ -74,30 +84,62 @@ def rotate_text(xy, trans, rot, mirror = False):
     if xy.rot < 0:
         xy.rot += 360
 
-def render_text(text, xy, size, color):
-    MIRROR_TEXT_ANCHOR = {
-            False: "start",
-            True: "end"
-            }
+def render_text(text, xy, size, color,
+        mirror_text = False,
+        align = 'start',
+        valign = 0.0):
 
+    rot = xy.rot
     if xy.rot >= 180:
-        xy.mirror = not xy.mirror
+        if not mirror_text:
+            xy.mirror = not xy.mirror
         ang = math.radians(xy.rot)
-        if xy.mirror:
-            ang = ang + math.pi / 2
-        else:
-            ang = ang + math.pi / 2
+        ang = ang + math.pi / 2
         sin = math.sin(ang)
         cos = math.cos(ang)
         xy.x = xy.x + cos * size
         xy.y = xy.y + sin * size
     if xy.rot >= 90 and 270 > xy.rot:
         xy.rot = xy.rot - 180
-    return '<text fill="%s" font-size="%f" x="%f" y="%f" transform="rotate(%f %f %f)" text-anchor="%s">%s</text>' % (
-            color, size, xy.x, -xy.y,
-            xy.rot, xy.x, -xy.y,
-            MIRROR_TEXT_ANCHOR[xy.mirror],
-            text)
+
+    transforms = ''
+    transforms = transforms + ' translate(%f %f)' % (xy.x, -xy.y)
+    transforms = transforms + ' rotate(%f 0 0)' % (xy.rot)
+    anchor = align
+    if mirror_text:
+        if xy.mirror:
+            transforms = transforms + ' scale(-1 1)'
+        if rot >= 180:
+            anchor = align_mirror(anchor)
+    else:
+        if xy.mirror:
+            anchor = align_mirror(anchor)
+
+    text_option = ''
+    lines = text.split('\n')
+    if len(lines) <= 1:
+        text2 = text
+        height = size
+        text_option = ' text-anchor="%s"' % anchor
+    else:
+        text2 = ''
+        y2 = 0.0
+
+        for line in lines:
+            text2 = text2 + '<tspan x="0" y="%f" height="%f" text-anchor="%s">' % (
+                    y2, size, align) + line + '</tspan>'
+            y2 = y2 + size
+        height = y2
+        text_option = ' height="0" width="0"'
+    
+    if valign != 0.0:
+        transforms = transforms + ' translate(0 %f)' % (-height * valign)
+
+    return '<text fill="%s" font-size="%f" transform="%s"%s>%s</text>' % (
+            color, size,
+            transforms,
+            text_option,
+            text2)
 
 class Wire(object):
     def __init__(self, data):
@@ -106,6 +148,8 @@ class Wire(object):
         self.x2 = float(data['@x2'])
         self.y2 = float(data['@y2'])
         self.width = float(data['@width'])
+        if self.width < 0.05:
+            self.width = 0.05
         self.layer = int(data['@layer'])
         self.style = ''
         self.stroke_dasharray = ''
@@ -133,7 +177,7 @@ class Wire(object):
                 rotate(xy2, Vec2r(x, y), rot, mirror)
                 view_box.expand(xy1.x, -xy1.y)
                 view_box.expand(xy2.x, -xy2.y)
-                yield '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="%s" stroke-width="%f" stroke-dasharray="%s"/>' % (
+                yield '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="%s" stroke-width="%f" stroke-dasharray="%s" stroke-linecap="round"/>' % (
                         xy1.x, -xy1.y, xy2.x, -xy2.y,
                         COLOR[self.layer], self.width, self.stroke_dasharray)
 
@@ -197,15 +241,73 @@ class Circle(object):
                 rotate(xy, Vec2r(x, y), rot, mirror)
                 view_box.expand(xy.x - self.radius, -xy.y - self.radius)
                 view_box.expand(xy.x + self.radius, -xy.y + self.radius)
+                fill = 'none'
+                if self.width == 0.0:
+                    fill = COLOR[self.layer]
                 yield '<circle cx="%f" cy="%f" r="%f" fill="%s" stroke="%s" stroke-width="%f"/>' % (
                         xy.x, -xy.y,
-                        self.radius, COLOR[self.layer], COLOR[self.layer], self.width)
+                        self.radius, fill, COLOR[self.layer], self.width)
 
 class Pad(object):
     def __init__(self, data):
         self.x = float(data['@x'])
         self.y = float(data['@y'])
         self.drill = float(data['@drill'])
+        if '@diameter' in data:
+            self.diameter = float(data['@diameter'])
+        else:
+            self.diameter = self.drill + 0.3
+        self.shape = 'round'
+        if '@shape' in data:
+            self.shape = data['@shape']
+        self.rot = 0
+        self.mirror = False
+        if '@rot' in data:
+            if data['@rot'][0] == 'M':
+                self.mirror = True
+                if data['@rot'][1] == 'R':
+                    self.rot = int(data['@rot'][2:])
+            elif data['@rot'][0] == 'R':
+                self.rot = int(data['@rot'][1:])
+
+    def render(self,
+            layers = {},
+            x = 0.0,
+            y = 0.0,
+            rot = 0,
+            mirror = False,
+            view_box = svg_common.ViewBox()):
+        xy = Vec2r(self.x, self.y)
+        rotate(xy, Vec2r(x, y), rot, mirror)
+        view_box.expand(xy.x - self.diameter, -xy.y - self.diameter)
+        view_box.expand(xy.x + self.diameter, -xy.y + self.diameter)
+        yield '<circle cx="%f" cy="%f" r="%f" fill="green" stroke="none"/>' % (
+                xy.x, -xy.y,
+                self.diameter / 2.0)
+        yield '<circle cx="%f" cy="%f" r="%f" fill="black" stroke="none"/>' % (
+                xy.x, -xy.y,
+                self.drill / 2.0)
+
+class Hole(object):
+    def __init__(self, data):
+        self.x = float(data['@x'])
+        self.y = float(data['@y'])
+        self.drill = float(data['@drill'])
+
+    def render(self,
+            layers = {},
+            x = 0.0,
+            y = 0.0,
+            rot = 0,
+            mirror = False,
+            view_box = svg_common.ViewBox()):
+        xy = Vec2r(self.x, self.y)
+        rotate(xy, Vec2r(x, y), rot, mirror)
+        view_box.expand(xy.x - self.drill, -xy.y - self.drill)
+        view_box.expand(xy.x + self.drill, -xy.y + self.drill)
+        yield '<circle cx="%f" cy="%f" r="%f" fill="none" stroke="gray" stroke-width="0.05"/>' % (
+                xy.x, -xy.y,
+                self.drill / 2.0)
 
 class Rectangle(object):
     def __init__(self, data):
@@ -240,6 +342,42 @@ class Rectangle(object):
                         xy1.x, -xy1.y, xy2.x, -xy2.y, xy3.x, -xy3.y, xy4.x, -xy4.y,
                         COLOR[self.layer])
 
+class Smd(object):
+    def __init__(self, data):
+        self.x = float(data['@x'])
+        self.y = float(data['@y'])
+        self.dx = float(data['@dx'])
+        self.dy = float(data['@dy'])
+        self.layer = int(data['@layer'])
+
+    def render(self,
+            layers = {},
+            x = 0.0,
+            y = 0.0,
+            rot = 0,
+            mirror = False,
+            view_box = svg_common.ViewBox()):
+        layer = self.layer
+        if mirror:
+            layer = COLOR_MIRROR[layer]
+        if layer in layers:
+            if layer in COLOR:
+                xy1 = Vec2r(self.x - self.dx / 2, self.y - self.dy / 2)
+                xy2 = Vec2r(self.x - self.dx / 2, self.y + self.dy / 2)
+                xy3 = Vec2r(self.x + self.dx / 2, self.y + self.dy / 2)
+                xy4 = Vec2r(self.x + self.dx / 2, self.y - self.dy / 2)
+                rotate(xy1, Vec2r(x, y), rot, mirror)
+                rotate(xy2, Vec2r(x, y), rot, mirror)
+                rotate(xy3, Vec2r(x, y), rot, mirror)
+                rotate(xy4, Vec2r(x, y), rot, mirror)
+                view_box.expand(xy1.x, -xy1.y)
+                view_box.expand(xy2.x, -xy2.y)
+                view_box.expand(xy3.x, -xy3.y)
+                view_box.expand(xy4.x, -xy4.y)
+                yield '<polygon points="%f,%f %f,%f %f,%f %f,%f" fill="%s"/>' % (
+                        xy1.x, -xy1.y, xy2.x, -xy2.y, xy3.x, -xy3.y, xy4.x, -xy4.y,
+                        COLOR[layer])
+
 class Polygon(object):
     def __init__(self, data):
         self.width = float(data['@width'])
@@ -254,9 +392,13 @@ class Polygon(object):
             y = 0.0,
             rot = 0,
             mirror = False,
+            signal_fill = False,
             view_box = svg_common.ViewBox()):
         if self.layer in layers:
             if self.layer in COLOR:
+                option = ''
+                if signal_fill:
+                    option = ' fill-opacity="0.25" stroke-opacity="0.5"'
                 yield '<polygon stroke="%s" fill="%s" stroke-width="%f" points="' % (
                         COLOR[self.layer], COLOR[self.layer], self.width)
                 for xy in self.vertex:
@@ -264,15 +406,33 @@ class Polygon(object):
                     rotate(xyr, Vec2r(x, y), rot, mirror)
                     view_box.expand(xyr.x, -xyr.y)
                     yield '%f,%f ' % (xyr.x, -xyr.y)
-                yield '"/>'
+                yield '"%s/>' % option
 
 class Text(object):
     def __init__(self, data):
         self.x = float(data['@x'])
         self.y = float(data['@y'])
         self.size = float(data['@size'])
+        self.font = ''
         if '@font' in data:
             self.font = data['@font']
+        self.align = 'start'
+        self.valign = 0.0
+        if '@align' in data:
+            align = data['@align'].split('-')
+            if align[0] == 'top':
+                self.valign = 1.0
+            elif align[0] == 'top':
+                self.valign = 0.0
+            else:
+                self.valign = 0.5
+
+            if align[1] == 'left':
+                self.align = 'start'
+            elif align[1] == 'right':
+                self.align = 'end'
+            else:
+                self.align = 'middle'
         self.text = ''
         if '#text' in data:
             self.text = data['#text']
@@ -293,6 +453,7 @@ class Text(object):
             y = 0.0,
             rot = 0,
             mirror = False,
+            mirror_text = False,
             replace = {},
             view_box = svg_common.ViewBox()):
         if self.layer in layers:
@@ -303,7 +464,13 @@ class Text(object):
                 text = self.text
                 if self.text.upper() in replace:
                     text = replace[self.text]
-                yield render_text(text, xy, self.size, COLOR[self.layer])
+                yield render_text(text,
+                        xy,
+                        self.size,
+                        COLOR[self.layer],
+                        mirror_text = mirror_text,
+                        align = self.align,
+                        valign = self.valign)
 
 class Pin(object):
     def __init__(self, data):
@@ -348,7 +515,7 @@ class Pin(object):
             xy = Vec2r(PIN_LENGTH[self.length] + 1.5, -0.5)
             rotate_text(xy, Vec2r(self.x, self.y), self.rot, self.mirror)
             rotate_text(xy, Vec2r(x, y), rot, mirror)
-            yield render_text(self.name, xy, 2.0, 'gray')
+            yield render_text(self.name, xy, 2.0, 'gray', valign = 0.5)
 
         if self.visible == 'pad' or self.visible == 'both':
             xy = Vec2r(1.0, 0.0)
@@ -446,26 +613,35 @@ class Frame(object):
                     yield render_text(chr(ord('A') + self.rows - iy), xy, 3.0, COLOR[self.layer])
 
 
-class Symbol(object):
+class VisualElementBase(object):
     def __init__(self, data):
-        self.name = data['@name']
         self.wires = []
         self.circles = []
+        self.holes = []
         self.pads = []
+        self.vias = []
         self.rectangles = []
         self.polygons = []
         self.texts = []
         self.frames = []
         self.pins = []
+        self.smds = []
+        self.signal_fill = False
         if 'wire' in data:
             for wire_data in eagle_types.array(data['wire']):
                 self.wires.append(Wire(wire_data))
         if 'circle' in data:
             for circle_data in eagle_types.array(data['circle']):
                 self.circles.append(Circle(circle_data))
+        if 'hole' in data:
+            for hole_data in eagle_types.array(data['hole']):
+                self.holes.append(Hole(hole_data))
         if 'pad' in data:
             for pad_data in eagle_types.array(data['pad']):
                 self.pads.append(Pad(pad_data))
+        if 'via' in data:
+            for via_data in eagle_types.array(data['via']):
+                self.vias.append(Pad(via_data))
         if 'rectangle' in data:
             for rectangle_data in eagle_types.array(data['rectangle']):
                 self.rectangles.append(Rectangle(rectangle_data))
@@ -481,6 +657,9 @@ class Symbol(object):
         if 'pin' in data:
             for pin_data in eagle_types.array(data['pin']):
                 self.pins.append(Pin(pin_data))
+        if 'smd' in data:
+            for smd_data in eagle_types.array(data['smd']):
+                self.smds.append(Smd(smd_data))
 
     def render(self,
             layers = {},
@@ -492,6 +671,7 @@ class Symbol(object):
             connects = {},
             view_box = svg_common.ViewBox(),
             smashed = False,
+            mirror_text = False,
             attributes = {}):
         for wire in self.wires:
             for output in wire.render(layers = layers,
@@ -503,6 +683,14 @@ class Symbol(object):
                 yield output
         for circle in self.circles:
             for output in circle.render(layers = layers,
+                    x = x,
+                    y = y,
+                    rot = rot,
+                    mirror = mirror,
+                    view_box = view_box):
+                yield output
+        for hole in self.holes:
+            for output in hole.render(layers = layers,
                     x = x,
                     y = y,
                     rot = rot,
@@ -523,6 +711,7 @@ class Symbol(object):
                     y = y,
                     rot = rot,
                     mirror = mirror,
+                    signal_fill = self.signal_fill,
                     view_box = view_box):
                 yield output
         for frame in self.frames:
@@ -542,6 +731,30 @@ class Symbol(object):
                     connects = connects,
                     view_box = view_box):
                 yield output
+        for smd in self.smds:
+            for output in smd.render(layers = layers,
+                    x = x,
+                    y = y,
+                    rot = rot,
+                    mirror = mirror,
+                    view_box = view_box):
+                yield output
+        for pad in self.pads:
+            for output in pad.render(layers = layers,
+                    x = x,
+                    y = y,
+                    rot = rot,
+                    mirror = mirror,
+                    view_box = view_box):
+                yield output
+        for via in self.vias:
+            for output in via.render(layers = layers,
+                    x = x,
+                    y = y,
+                    rot = rot,
+                    mirror = mirror,
+                    view_box = view_box):
+                yield output
         for text in self.texts:
             if not smashed or text.text[0] != '>':
                 for output in text.render(layers = layers,
@@ -549,6 +762,7 @@ class Symbol(object):
                         y = y,
                         rot = rot,
                         mirror = mirror,
+                        mirror_text = mirror_text,
                         replace = replace,
                         view_box = view_box):
                     yield output
@@ -565,9 +779,30 @@ class Symbol(object):
                         y = attribute.y,
                         rot = attribute.rot,
                         mirror = attribute.mirror,
+                        mirror_text = mirror_text,
                         replace = replace,
                         view_box = view_box):
                     yield output
+
+class Package(VisualElementBase):
+    def __init__(self, data):
+        super(Package, self).__init__(data)
+        self.name = data['@name']
+
+class Symbol(VisualElementBase):
+    def __init__(self, data):
+        super(Symbol, self).__init__(data)
+        self.name = data['@name']
+
+class Signal(VisualElementBase):
+    def __init__(self, data):
+        super(Signal, self).__init__(data)
+        self.name = data['@name']
+        self.signal_fill = True
+
+class Plain(VisualElementBase):
+    def __init__(self, data):
+        super(Plain, self).__init__(data)
 
 class Gate(object):
     def __init__(self, data):
@@ -613,12 +848,19 @@ class Library(object):
         self.name = data['@name']
         self.symbols = {}
         self.devicesets = {}
-        for symbol_data in eagle_types.named_array(data['symbols']):
-            symbol = Symbol(symbol_data)
-            self.symbols[symbol.name] = symbol
-        for deviceset_data in eagle_types.named_array(data['devicesets']):
-            deviceset = Deviceset(deviceset_data)
-            self.devicesets[deviceset.name] = deviceset
+        self.packages = {}
+        if 'symbols' in data:
+            for symbol_data in eagle_types.named_array(data['symbols']):
+                symbol = Symbol(symbol_data)
+                self.symbols[symbol.name] = symbol
+        if 'devicesets' in data:
+            for deviceset_data in eagle_types.named_array(data['devicesets']):
+                deviceset = Deviceset(deviceset_data)
+                self.devicesets[deviceset.name] = deviceset
+        if 'packages' in data:
+            for package_data in eagle_types.named_array(data['packages']):
+                package = Package(package_data)
+                self.packages[package.name] = package
 
 class Part(object):
     def __init__(self, data):
@@ -630,9 +872,54 @@ class Part(object):
             self.value = data['@value']
 
 
-class Plain(object):
+class Element(object):
     def __init__(self, data):
-        self.name = ''
+        self.name = data['@name']
+        self.value = data['@value']
+        self.library = data['@library']
+        self.package = data['@package']
+        self.x = float(data['@x'])
+        self.y = float(data['@y'])
+        self.mirror = False
+        self.smashed = False
+        self.rot = 0
+        self.attributes = {}
+        if '@rot' in data:
+            if data['@rot'][0] == 'M':
+                self.mirror = True
+                if data['@rot'][1] == 'R':
+                    self.rot = int(data['@rot'][2:])
+            elif data['@rot'][0] == 'R':
+                self.rot = int(data['@rot'][1:])
+        if '@smashed' in data:
+            if data['@smashed'] == 'yes':
+                self.smashed = True
+        if 'attribute' in data:
+            for attribute_data in eagle_types.array(data['attribute']):
+                self.attributes[attribute_data['@name']] = Text(attribute_data)
+
+    def render(self,
+            layers = {},
+            libraries = {},
+            replace = {},
+            mirror_text = False,
+            view_box = svg_common.ViewBox()):
+        replace2 = copy.deepcopy(replace)
+        library = libraries[self.library]
+        replace2['>NAME'] = self.name
+        replace2['>VALUE'] = self.value
+
+        for output in library.packages[self.package].render(
+                layers = layers,
+                x = self.x, y = self.y,
+                rot = self.rot,
+                mirror = self.mirror,
+                replace = replace2,
+                mirror_text = mirror_text,
+                view_box = view_box,
+                smashed = self.smashed,
+                attributes = self.attributes):
+            yield output
 
 class Instance(object):
     def __init__(self, data):
