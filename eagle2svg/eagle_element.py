@@ -49,6 +49,8 @@ def rotate(xy, trans, rot, mirror = False):
     ang = math.radians(rot)
     if mirror:
         orig.x = -orig.x
+        xy.mirror = not xy.mirror
+        ang = -ang
     sin = math.sin(ang)
     cos = math.cos(ang)
     xy.x = orig.x * cos - orig.y * sin + trans.x
@@ -60,6 +62,19 @@ def align_mirror(align):
     elif align == 'end':
         return 'start'
     return align
+
+def curve_radius(xy1, xy2, curve):
+    mid = Vec2r((xy1.x + xy2.x) * 0.5, (xy1.y + xy2.y) * 0.5)
+    if curve < 0:
+        curve = -180 - curve
+    else:
+        curve = 180 - curve
+    tan = math.tan(math.radians(curve) * 0.5)
+    offset = Vec2r((xy1.y - xy2.y) * 0.5 * tan, -(xy1.x - xy2.x) * 0.5 * tan)
+    cx = mid.x + offset.x
+    cy = mid.y + offset.y
+    r = math.hypot(cx - xy1.x, cy - xy1.y)
+    return r
 
 def rotate_text(xy, trans, rot, mirror = False):
     orig = copy.deepcopy(xy)
@@ -150,6 +165,8 @@ class Wire(object):
         self.width = float(data['@width'])
         if self.width < 0.05:
             self.width = 0.05
+        if '@curve' in data:
+            self.curve = float(data['@curve'])
         self.layer = int(data['@layer'])
         self.style = ''
         self.stroke_dasharray = ''
@@ -177,9 +194,18 @@ class Wire(object):
                 rotate(xy2, Vec2r(x, y), rot, mirror)
                 view_box.expand(xy1.x, -xy1.y)
                 view_box.expand(xy2.x, -xy2.y)
-                yield '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="%s" stroke-width="%f" stroke-dasharray="%s" stroke-linecap="round"/>' % (
-                        xy1.x, -xy1.y, xy2.x, -xy2.y,
-                        COLOR[self.layer], self.width, self.stroke_dasharray)
+                if hasattr(self, 'curve'):
+                    r = curve_radius(xy1, xy2, self.curve)
+                    if self.curve < 0:
+                        side = 1
+                    else:
+                        side = 0
+                    yield '<path d="M %f %f A %f %f 0 0 %d %f %f" fill="none" stroke="%s" stroke-width="%f" stroke-linecap="round"/>' % (
+                            xy1.x, -xy1.y, r, r, side, xy2.x, -xy2.y, COLOR[self.layer], self.width)
+                else:
+                    yield '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="%s" stroke-width="%f" stroke-dasharray="%s" stroke-linecap="round"/>' % (
+                            xy1.x, -xy1.y, xy2.x, -xy2.y,
+                            COLOR[self.layer], self.width, self.stroke_dasharray)
 
 class Junction(object):
     def __init__(self, data):
@@ -384,7 +410,11 @@ class Polygon(object):
         self.layer = int(data['@layer'])
         self.vertex = []
         for v in data['vertex']:
-            self.vertex.append(Vec2r(float(v['@x']), float(v['@y'])))
+            if '@curve' in v:
+                self.vertex.append([Vec2r(float(v['@x']), float(v['@y'])), float(v['@curve'])])
+            else:
+                self.vertex.append([Vec2r(float(v['@x']), float(v['@y']))])
+        self.vertex.append(self.vertex[0])
 
     def render(self,
             layers = {},
@@ -399,14 +429,34 @@ class Polygon(object):
                 option = ''
                 if signal_fill:
                     option = ' fill-opacity="0.25" stroke-opacity="0.5"'
-                yield '<polygon stroke="%s" fill="%s" stroke-width="%f" points="' % (
-                        COLOR[self.layer], COLOR[self.layer], self.width)
-                for xy in self.vertex:
-                    xyr = copy.deepcopy(xy)
+
+                xyr = copy.deepcopy(self.vertex[0][0])
+                rotate(xyr, Vec2r(x, y), rot, mirror)
+                view_box.expand(xyr.x, -xyr.y)
+                yield '<path d="M%f %f ' % (xyr.x, -xyr.y)
+                xy_prev = copy.deepcopy(xyr)
+                curve = 0.0
+                next_curve = False
+                for v in self.vertex:
+                    xyr = copy.deepcopy(v[0])
                     rotate(xyr, Vec2r(x, y), rot, mirror)
                     view_box.expand(xyr.x, -xyr.y)
-                    yield '%f,%f ' % (xyr.x, -xyr.y)
-                yield '"%s/>' % option
+                    if next_curve:
+                        next_curve = False
+                        r = curve_radius(xy_prev, xyr, curve)
+                        if curve < 0:
+                            side = 1
+                        else:
+                            side = 0
+                        yield 'A%f %f 0 0 %d %f %f ' % (r, r, side, xyr.x, -xyr.y)
+                    else:
+                        yield 'L%f %f ' % (xyr.x, -xyr.y)
+                    xy_prev = copy.deepcopy(xyr)
+                    if len(v) > 1:
+                        next_curve = True
+                        curve = v[1]
+                yield 'Z" stroke="%s" fill="%s" stroke-width="%f"%s/>' % (
+                        COLOR[self.layer], COLOR[self.layer], self.width, option)
 
 class Text(object):
     def __init__(self, data):

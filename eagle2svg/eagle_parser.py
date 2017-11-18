@@ -50,7 +50,7 @@ class Board(EagleFileBase):
         for key, signal in self.signals.items():
             for output in signal.render(layers = layers,
                     view_box = view_box):
-                svg_contents = svg_contents + output
+                svg_contents = svg_contents + output + '\n'
 
         view_box.x1 = view_box.x1 - 1
         view_box.y1 = view_box.y1 - 1
@@ -91,7 +91,7 @@ class Schematic(EagleFileBase):
                 parts = self.parts,
                 replace = replace2,
                 view_box = view_box):
-            svg_contents = svg_contents + output
+            svg_contents = svg_contents + output + '\n'
 
         view_box.x1 = view_box.x1 - 1
         view_box.y1 = view_box.y1 - 1
