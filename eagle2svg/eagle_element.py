@@ -168,7 +168,7 @@ def render_text(text, xy, size, color,
         text_option = ' height="%f" text-anchor="%s"' % (height, anchor)
     
     if valign != 0.0:
-        transforms = transforms + ' translate(0 %f)' % (height * valign)
+        transforms = transforms + ' translate(0 %f)' % (height * (valign - 0.2))
 
     return '<text fill="%s" font-size="%f" transform="%s"%s>%s</text>' % (
             color, size,
