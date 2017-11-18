@@ -35,22 +35,16 @@ class Board(EagleFileBase):
         replace2 = copy.deepcopy(replace)
         view_box = svg_common.ViewBox()
         svg_contents = ''
-        for output in self.plain.render(layers = layers,
-                replace = replace2,
+        self.plain.render(replace = replace2,
                 mirror_text = True,
-                view_box = view_box):
-            svg_contents = svg_contents + output
+                view_box = view_box)
         for key, element in self.elements.items():
-            for output in element.render(layers = layers,
-                    libraries = self.libraries,
+            element.render(libraries = self.libraries,
                     replace = replace2,
                     mirror_text = True,
-                    view_box = view_box):
-                svg_contents = svg_contents + output
+                    view_box = view_box)
         for key, signal in self.signals.items():
-            for output in signal.render(layers = layers,
-                    view_box = view_box):
-                svg_contents = svg_contents + output + '\n'
+            signal.render(view_box = view_box)
 
         view_box.x1 = view_box.x1 - 1
         view_box.y1 = view_box.y1 - 1
@@ -61,7 +55,10 @@ class Board(EagleFileBase):
         print('<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="%f %f %f %f">' % (
             view_box.x1, view_box.y1, view_box.x2 - view_box.x1, view_box.y2 - view_box.y1))
         print('<style type="text/css">:root{background-color: black;} *{font-family:Consolas, \'Courier New\', Courier, Monaco, monospace;}</style>')
-        print('%s' % svg_contents)
+        for layer in layers:
+            if layer in view_box.layers:
+                for line in view_box.layers[layer]:
+                    print(line)
         print('</svg>')
 
 
@@ -86,12 +83,10 @@ class Schematic(EagleFileBase):
         replace2['>SHEET'] = str(sheet + 1) + '/' + str(len(self.sheets))
         view_box = svg_common.ViewBox()
         svg_contents = ''
-        for output in self.sheets[sheet].render(layers = layers,
-                libraries = self.libraries,
+        self.sheets[sheet].render(libraries = self.libraries,
                 parts = self.parts,
                 replace = replace2,
-                view_box = view_box):
-            svg_contents = svg_contents + output + '\n'
+                view_box = view_box)
 
         view_box.x1 = view_box.x1 - 1
         view_box.y1 = view_box.y1 - 1
@@ -102,7 +97,10 @@ class Schematic(EagleFileBase):
         print('<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="%f %f %f %f">' % (
             view_box.x1, view_box.y1, view_box.x2 - view_box.x1, view_box.y2 - view_box.y1))
         print('<style type="text/css">:root{background-color: white;} *{font-family:Consolas, \'Courier New\', Courier, Monaco, monospace;}</style>')
-        print('%s' % svg_contents)
+        for layer in layers:
+            if layer in view_box.layers:
+                for line in view_box.layers[layer]:
+                    print(line)
         print('</svg>')
 
 
@@ -119,7 +117,8 @@ class Eagle(object):
         
         self.replace = {}
         self.replace['>DRAWING_NAME'], ext = os.path.splitext(os.path.basename(filename))
-        self.replace['>LAST_DATE_TIME'] = datetime.fromtimestamp(os.path.getmtime(filename))
+        self.replace['>LAST_DATE_TIME'] = datetime.fromtimestamp(
+                int(os.path.getmtime(filename)))
 
     def render(self, sheet = 0, layers = {}):
         return self.data.render(sheet = sheet,

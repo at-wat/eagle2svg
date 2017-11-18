@@ -27,7 +27,25 @@ COLOR = {
         }
 COLOR_MIRROR = {
         1: 16,
-        16: 1
+        16: 1,
+        21: 22,
+        22: 21,
+        23: 24,
+        24: 23,
+        25: 26,
+        26: 25,
+        27: 28,
+        28: 27,
+        29: 30,
+        30: 29,
+        31: 32,
+        32: 31,
+        33: 34,
+        34: 33,
+        35: 36,
+        36: 35,
+        37: 38,
+        38: 37
         }
 
 PIN_LENGTH = {
@@ -36,6 +54,11 @@ PIN_LENGTH = {
 	'short':  2.54,
 	'point':  0.0
         }
+
+def mirror_color(color):
+    if color in COLOR_MIRROR:
+        return COLOR_MIRROR[color]
+    return color
 
 class Vec2r(object):
     def __init__(self, x, y, rot = 0, mirror = False):
@@ -177,32 +200,35 @@ class Wire(object):
                 self.stroke_dasharray = '0.5,0.5'
 
     def render(self,
-            layers = {},
             x = 0.0,
             y = 0.0,
             rot = 0,
             mirror = False,
-            view_box = svg_common.ViewBox()):
-        if self.layer in layers:
-            if self.layer in COLOR:
-                xy1 = Vec2r(self.x1, self.y1)
-                xy2 = Vec2r(self.x2, self.y2)
-                rotate(xy1, Vec2r(x, y), rot, mirror)
-                rotate(xy2, Vec2r(x, y), rot, mirror)
-                view_box.expand(xy1.x, -xy1.y)
-                view_box.expand(xy2.x, -xy2.y)
-                if hasattr(self, 'curve'):
-                    r = curve_radius(xy1, xy2, self.curve)
-                    if self.curve < 0:
-                        side = 1
-                    else:
-                        side = 0
-                    yield '<path d="M %f %f A %f %f 0 0 %d %f %f" fill="none" stroke="%s" stroke-width="%f" stroke-linecap="round"/>' % (
-                            xy1.x, -xy1.y, r, r, side, xy2.x, -xy2.y, COLOR[self.layer], self.width)
+            view_box = None):
+        layer = self.layer
+        if mirror:
+            layer = mirror_color(layer)
+        if layer in COLOR:
+            xy1 = Vec2r(self.x1, self.y1)
+            xy2 = Vec2r(self.x2, self.y2)
+            rotate(xy1, Vec2r(x, y), rot, mirror)
+            rotate(xy2, Vec2r(x, y), rot, mirror)
+            view_box.expand(xy1.x, -xy1.y)
+            view_box.expand(xy2.x, -xy2.y)
+            if hasattr(self, 'curve'):
+                r = curve_radius(xy1, xy2, self.curve)
+                if self.curve < 0:
+                    side = 1
                 else:
-                    yield '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="%s" stroke-width="%f" stroke-dasharray="%s" stroke-linecap="round"/>' % (
-                            xy1.x, -xy1.y, xy2.x, -xy2.y,
-                            COLOR[self.layer], self.width, self.stroke_dasharray)
+                    side = 0
+                view_box.append(layer,
+                        '<path d="M %f %f A %f %f 0 0 %d %f %f" fill="none" stroke="%s" stroke-width="%f" stroke-linecap="round"/>' % (
+                        xy1.x, -xy1.y, r, r, side, xy2.x, -xy2.y, COLOR[layer], self.width))
+            else:
+                view_box.append(layer,
+                        '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="%s" stroke-width="%f" stroke-dasharray="%s" stroke-linecap="round"/>' % (
+                        xy1.x, -xy1.y, xy2.x, -xy2.y,
+                        COLOR[layer], self.width, self.stroke_dasharray))
 
 class Junction(object):
     def __init__(self, data):
@@ -210,10 +236,10 @@ class Junction(object):
         self.y = float(data['@y'])
 
     def render(self,
-            layers = {},
-            view_box = svg_common.ViewBox()):
+            view_box = None):
         view_box.expand(self.x, -self.y)
-        yield '<circle cx="%f" cy="%f" r="0.5" fill="green"/>' % (self.x, -self.y)
+        view_box.append(91,
+                '<circle cx="%f" cy="%f" r="0.5" fill="green"/>' % (self.x, -self.y))
 
 class Label(object):
     def __init__(self, data):
@@ -232,15 +258,13 @@ class Label(object):
                 self.rot = int(data['@rot'][1:])
 
     def render(self,
-            layers = {},
-            view_box = svg_common.ViewBox(),
+            view_box = None,
             net_name = ''):
-        if self.layer in layers:
-            if self.layer in COLOR:
-                xy = Vec2r(0.0, 0.0)
-                rotate_text(xy, Vec2r(self.x, self.y), self.rot, self.mirror)
-                view_box.expand(xy.x, -xy.y)
-                yield render_text(net_name, xy, self.size, COLOR[self.layer])
+        if self.layer in COLOR:
+            xy = Vec2r(0.0, 0.0)
+            rotate_text(xy, Vec2r(self.x, self.y), self.rot, self.mirror)
+            view_box.expand(xy.x, -xy.y)
+            view_box.append(self.layer, render_text(net_name, xy, self.size, COLOR[self.layer]))
 
 
 class Circle(object):
@@ -252,24 +276,26 @@ class Circle(object):
         self.layer = int(data['@layer'])
 
     def render(self,
-            layers = {},
             x = 0.0,
             y = 0.0,
             rot = 0,
             mirror = False,
-            view_box = svg_common.ViewBox()):
-        if self.layer in layers:
-            if self.layer in COLOR:
-                xy = Vec2r(self.x, self.y)
-                rotate(xy, Vec2r(x, y), rot, mirror)
-                view_box.expand(xy.x - self.radius, -xy.y - self.radius)
-                view_box.expand(xy.x + self.radius, -xy.y + self.radius)
-                fill = 'none'
-                if self.width == 0.0:
-                    fill = COLOR[self.layer]
-                yield '<circle cx="%f" cy="%f" r="%f" fill="%s" stroke="%s" stroke-width="%f"/>' % (
-                        xy.x, -xy.y,
-                        self.radius, fill, COLOR[self.layer], self.width)
+            view_box = None):
+        layer = self.layer
+        if mirror:
+            layer = mirror_color(layer)
+        if layer in COLOR:
+            xy = Vec2r(self.x, self.y)
+            rotate(xy, Vec2r(x, y), rot, mirror)
+            view_box.expand(xy.x - self.radius, -xy.y - self.radius)
+            view_box.expand(xy.x + self.radius, -xy.y + self.radius)
+            fill = 'none'
+            if self.width == 0.0:
+                fill = COLOR[layer]
+            view_box.append(layer,
+                    '<circle cx="%f" cy="%f" r="%f" fill="%s" stroke="%s" stroke-width="%f"/>' % (
+                    xy.x, -xy.y,
+                    self.radius, fill, COLOR[layer], self.width))
 
 class Pad(object):
     def __init__(self, data):
@@ -294,27 +320,29 @@ class Pad(object):
                 self.rot = int(data['@rot'][1:])
 
     def render(self,
-            layers = {},
             x = 0.0,
             y = 0.0,
             rot = 0,
             mirror = False,
-            view_box = svg_common.ViewBox()):
+            view_box = None):
         xy = Vec2r(self.x, self.y)
         rotate(xy, Vec2r(x, y), rot, mirror)
         view_box.expand(xy.x - self.diameter, -xy.y - self.diameter)
         view_box.expand(xy.x + self.diameter, -xy.y + self.diameter)
         if self.shape == 'round':
-            yield '<circle cx="%f" cy="%f" r="%f" fill="green" stroke="none"/>' % (
+            view_box.append(17,
+                    '<circle cx="%f" cy="%f" r="%f" fill="green" stroke="none"/>' % (
                     xy.x, -xy.y,
-                    self.diameter / 2.0)
+                    self.diameter / 2.0))
         elif self.shape == 'square':
-            yield '<rect x="%f" y="%f" width="%f" height="%f" fill="green" stroke="none" transform="rotate(%f 0 0)"/>' % (
+            view_box.append(17,
+                    '<rect x="%f" y="%f" width="%f" height="%f" fill="green" stroke="none" transform="rotate(%f 0 0)"/>' % (
                     xy.x - self.diameter / 2.0, -xy.y - self.diameter / 2.0,
-                    self.diameter,  self.diameter, -xy.rot)
-        yield '<circle cx="%f" cy="%f" r="%f" fill="black" stroke="none"/>' % (
+                    self.diameter,  self.diameter, -xy.rot))
+        view_box.append(17,
+                '<circle cx="%f" cy="%f" r="%f" fill="black" stroke="none"/>' % (
                 xy.x, -xy.y,
-                self.drill / 2.0)
+                self.drill / 2.0))
 
 class Hole(object):
     def __init__(self, data):
@@ -323,19 +351,19 @@ class Hole(object):
         self.drill = float(data['@drill'])
 
     def render(self,
-            layers = {},
             x = 0.0,
             y = 0.0,
             rot = 0,
             mirror = False,
-            view_box = svg_common.ViewBox()):
+            view_box = None):
         xy = Vec2r(self.x, self.y)
         rotate(xy, Vec2r(x, y), rot, mirror)
         view_box.expand(xy.x - self.drill, -xy.y - self.drill)
         view_box.expand(xy.x + self.drill, -xy.y + self.drill)
-        yield '<circle cx="%f" cy="%f" r="%f" fill="none" stroke="gray" stroke-width="0.05"/>' % (
+        view_box.append(20,
+                '<circle cx="%f" cy="%f" r="%f" fill="none" stroke="gray" stroke-width="0.05"/>' % (
                 xy.x, -xy.y,
-                self.drill / 2.0)
+                self.drill / 2.0))
 
 class Rectangle(object):
     def __init__(self, data):
@@ -346,29 +374,31 @@ class Rectangle(object):
         self.layer = int(data['@layer'])
 
     def render(self,
-            layers = {},
             x = 0.0,
             y = 0.0,
             rot = 0,
             mirror = False,
-            view_box = svg_common.ViewBox()):
-        if self.layer in layers:
-            if self.layer in COLOR:
-                xy1 = Vec2r(self.x1, self.y1)
-                xy2 = Vec2r(self.x2, self.y1)
-                xy3 = Vec2r(self.x2, self.y2)
-                xy4 = Vec2r(self.x1, self.y2)
-                rotate(xy1, Vec2r(x, y), rot, mirror)
-                rotate(xy2, Vec2r(x, y), rot, mirror)
-                rotate(xy3, Vec2r(x, y), rot, mirror)
-                rotate(xy4, Vec2r(x, y), rot, mirror)
-                view_box.expand(xy1.x, -xy1.y)
-                view_box.expand(xy2.x, -xy2.y)
-                view_box.expand(xy3.x, -xy3.y)
-                view_box.expand(xy4.x, -xy4.y)
-                yield '<polygon points="%f,%f %f,%f %f,%f %f,%f" fill="%s"/>' % (
-                        xy1.x, -xy1.y, xy2.x, -xy2.y, xy3.x, -xy3.y, xy4.x, -xy4.y,
-                        COLOR[self.layer])
+            view_box = None):
+        layer = self.layer
+        if mirror:
+            layer = mirror_color(layer)
+        if layer in COLOR:
+            xy1 = Vec2r(self.x1, self.y1)
+            xy2 = Vec2r(self.x2, self.y1)
+            xy3 = Vec2r(self.x2, self.y2)
+            xy4 = Vec2r(self.x1, self.y2)
+            rotate(xy1, Vec2r(x, y), rot, mirror)
+            rotate(xy2, Vec2r(x, y), rot, mirror)
+            rotate(xy3, Vec2r(x, y), rot, mirror)
+            rotate(xy4, Vec2r(x, y), rot, mirror)
+            view_box.expand(xy1.x, -xy1.y)
+            view_box.expand(xy2.x, -xy2.y)
+            view_box.expand(xy3.x, -xy3.y)
+            view_box.expand(xy4.x, -xy4.y)
+            view_box.append(layer,
+                    '<polygon points="%f,%f %f,%f %f,%f %f,%f" fill="%s"/>' % (
+                    xy1.x, -xy1.y, xy2.x, -xy2.y, xy3.x, -xy3.y, xy4.x, -xy4.y,
+                    COLOR[layer]))
 
 class Smd(object):
     def __init__(self, data):
@@ -379,32 +409,31 @@ class Smd(object):
         self.layer = int(data['@layer'])
 
     def render(self,
-            layers = {},
             x = 0.0,
             y = 0.0,
             rot = 0,
             mirror = False,
-            view_box = svg_common.ViewBox()):
+            view_box = None):
         layer = self.layer
         if mirror:
-            layer = COLOR_MIRROR[layer]
-        if layer in layers:
-            if layer in COLOR:
-                xy1 = Vec2r(self.x - self.dx / 2, self.y - self.dy / 2)
-                xy2 = Vec2r(self.x - self.dx / 2, self.y + self.dy / 2)
-                xy3 = Vec2r(self.x + self.dx / 2, self.y + self.dy / 2)
-                xy4 = Vec2r(self.x + self.dx / 2, self.y - self.dy / 2)
-                rotate(xy1, Vec2r(x, y), rot, mirror)
-                rotate(xy2, Vec2r(x, y), rot, mirror)
-                rotate(xy3, Vec2r(x, y), rot, mirror)
-                rotate(xy4, Vec2r(x, y), rot, mirror)
-                view_box.expand(xy1.x, -xy1.y)
-                view_box.expand(xy2.x, -xy2.y)
-                view_box.expand(xy3.x, -xy3.y)
-                view_box.expand(xy4.x, -xy4.y)
-                yield '<polygon points="%f,%f %f,%f %f,%f %f,%f" fill="%s"/>' % (
-                        xy1.x, -xy1.y, xy2.x, -xy2.y, xy3.x, -xy3.y, xy4.x, -xy4.y,
-                        COLOR[layer])
+            layer = mirror_color(layer)
+        if layer in COLOR:
+            xy1 = Vec2r(self.x - self.dx / 2, self.y - self.dy / 2)
+            xy2 = Vec2r(self.x - self.dx / 2, self.y + self.dy / 2)
+            xy3 = Vec2r(self.x + self.dx / 2, self.y + self.dy / 2)
+            xy4 = Vec2r(self.x + self.dx / 2, self.y - self.dy / 2)
+            rotate(xy1, Vec2r(x, y), rot, mirror)
+            rotate(xy2, Vec2r(x, y), rot, mirror)
+            rotate(xy3, Vec2r(x, y), rot, mirror)
+            rotate(xy4, Vec2r(x, y), rot, mirror)
+            view_box.expand(xy1.x, -xy1.y)
+            view_box.expand(xy2.x, -xy2.y)
+            view_box.expand(xy3.x, -xy3.y)
+            view_box.expand(xy4.x, -xy4.y)
+            view_box.append(layer,
+                    '<polygon points="%f,%f %f,%f %f,%f %f,%f" fill="%s"/>' % (
+                    xy1.x, -xy1.y, xy2.x, -xy2.y, xy3.x, -xy3.y, xy4.x, -xy4.y,
+                    COLOR[layer]))
 
 class Polygon(object):
     def __init__(self, data):
@@ -419,46 +448,51 @@ class Polygon(object):
         self.vertex.append(self.vertex[0])
 
     def render(self,
-            layers = {},
             x = 0.0,
             y = 0.0,
             rot = 0,
             mirror = False,
             signal_fill = False,
-            view_box = svg_common.ViewBox()):
-        if self.layer in layers:
-            if self.layer in COLOR:
-                option = ''
-                if signal_fill:
-                    option = ' fill-opacity="0.25" stroke-opacity="0.5"'
+            view_box = None):
+        layer = self.layer
+        if mirror:
+            layer = mirror_color(layer)
+        if layer in COLOR:
+            option = ''
+            if signal_fill:
+                option = ' fill-opacity="0.25" stroke-opacity="0.5"'
 
-                xyr = copy.deepcopy(self.vertex[0][0])
+            xyr = copy.deepcopy(self.vertex[0][0])
+            rotate(xyr, Vec2r(x, y), rot, mirror)
+            view_box.expand(xyr.x, -xyr.y)
+            view_box.append(layer,
+                    '<path d="M%f %f ' % (xyr.x, -xyr.y))
+            xy_prev = copy.deepcopy(xyr)
+            curve = 0.0
+            next_curve = False
+            for v in self.vertex:
+                xyr = copy.deepcopy(v[0])
                 rotate(xyr, Vec2r(x, y), rot, mirror)
                 view_box.expand(xyr.x, -xyr.y)
-                yield '<path d="M%f %f ' % (xyr.x, -xyr.y)
-                xy_prev = copy.deepcopy(xyr)
-                curve = 0.0
-                next_curve = False
-                for v in self.vertex:
-                    xyr = copy.deepcopy(v[0])
-                    rotate(xyr, Vec2r(x, y), rot, mirror)
-                    view_box.expand(xyr.x, -xyr.y)
-                    if next_curve:
-                        next_curve = False
-                        r = curve_radius(xy_prev, xyr, curve)
-                        if curve < 0:
-                            side = 1
-                        else:
-                            side = 0
-                        yield 'A%f %f 0 0 %d %f %f ' % (r, r, side, xyr.x, -xyr.y)
+                if next_curve:
+                    next_curve = False
+                    r = curve_radius(xy_prev, xyr, curve)
+                    if curve < 0:
+                        side = 1
                     else:
-                        yield 'L%f %f ' % (xyr.x, -xyr.y)
-                    xy_prev = copy.deepcopy(xyr)
-                    if len(v) > 1:
-                        next_curve = True
-                        curve = v[1]
-                yield 'Z" stroke="%s" fill="%s" stroke-width="%f"%s/>' % (
-                        COLOR[self.layer], COLOR[self.layer], self.width, option)
+                        side = 0
+                    view_box.append(layer,
+                            'A%f %f 0 0 %d %f %f ' % (r, r, side, xyr.x, -xyr.y))
+                else:
+                    view_box.append(layer,
+                            'L%f %f ' % (xyr.x, -xyr.y))
+                xy_prev = copy.deepcopy(xyr)
+                if len(v) > 1:
+                    next_curve = True
+                    curve = v[1]
+            view_box.append(layer,
+                    'Z" stroke="%s" fill="%s" stroke-width="%f"%s/>' % (
+                    COLOR[layer], COLOR[layer], self.width, option))
 
 class Text(object):
     def __init__(self, data):
@@ -500,29 +534,32 @@ class Text(object):
                 self.rot = int(data['@rot'][1:])
 
     def render(self,
-            layers = {},
             x = 0.0,
             y = 0.0,
             rot = 0,
             mirror = False,
             mirror_text = False,
+            no_mirror = False,
             replace = {},
-            view_box = svg_common.ViewBox()):
-        if self.layer in layers:
-            if self.layer in COLOR:
-                xy = Vec2r(self.x, self.y, self.rot, self.mirror)
-                rotate_text(xy, Vec2r(x, y), rot, mirror)
-                view_box.expand(xy.x, -xy.y)
-                text = self.text
-                if self.text.upper() in replace:
-                    text = replace[self.text]
-                yield render_text(text,
+            view_box = None):
+        layer = self.layer
+        if self.mirror != mirror and not no_mirror:
+            layer = mirror_color(layer)
+        if layer in COLOR:
+            xy = Vec2r(self.x, self.y, self.rot, self.mirror)
+            rotate_text(xy, Vec2r(x, y), rot, mirror)
+            view_box.expand(xy.x, -xy.y)
+            text = self.text
+            if self.text.upper() in replace:
+                text = replace[self.text]
+            view_box.append(layer,
+                    render_text(text,
                         xy,
                         self.size,
-                        COLOR[self.layer],
+                        COLOR[layer],
                         mirror_text = mirror_text,
                         align = self.align,
-                        valign = self.valign)
+                        valign = self.valign))
 
 class Pin(object):
     def __init__(self, data):
@@ -544,14 +581,13 @@ class Pin(object):
                 self.rot = int(data['@rot'][1:])
 
     def render(self,
-            layers = {},
             x = 0.0,
             y = 0.0,
             rot = 0,
             mirror = False,
             replace = {},
             connects = {},
-            view_box = svg_common.ViewBox()):
+            view_box = None):
         xy1 = Vec2r(0.0, 0.0)
         xy2 = Vec2r(PIN_LENGTH[self.length], 0.0)
         rotate(xy1, Vec2r(self.x, self.y), self.rot, self.mirror)
@@ -560,23 +596,26 @@ class Pin(object):
         rotate(xy2, Vec2r(x, y), rot, mirror)
         view_box.expand(xy1.x, -xy1.y)
         view_box.expand(xy2.x, -xy2.y)
-        yield '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="maroon" stroke-width="0.15"/>' % (
-                xy1.x, -xy1.y, xy2.x, -xy2.y)
+        view_box.append(93,
+                '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="maroon" stroke-width="0.15"/>' % (
+                xy1.x, -xy1.y, xy2.x, -xy2.y))
 
         if self.visible == 'pin' or self.visible == 'both':
             xy = Vec2r(PIN_LENGTH[self.length] + 1.5, 0.0)
             rotate_text(xy, Vec2r(self.x, self.y), self.rot, self.mirror)
             rotate_text(xy, Vec2r(x, y), rot, mirror)
             xy.y = xy.y + 0.5
-            yield render_text(self.name, xy, 2.0, 'gray', valign = 0.5)
+            view_box.append(93,
+                    render_text(self.name, xy, 2.0, 'gray', valign = 0.5))
 
         if self.visible == 'pad' or self.visible == 'both':
             xy = Vec2r(1.5, 0.0)
             rotate_text(xy, Vec2r(self.x, self.y), self.rot, self.mirror)
             rotate_text(xy, Vec2r(x, y), rot, mirror)
             xy.y += 1.5
-            yield render_text(connects[self.name].pad, xy, 1.5, 'gray',
-                    align = 'middle', valign = 0.5)
+            view_box.append(93,
+                    render_text(connects[self.name].pad, xy, 1.5, 'gray',
+                    align = 'middle', valign = 0.5))
 
 
 class Frame(object):
@@ -590,82 +629,90 @@ class Frame(object):
         self.layer = int(data['@layer'])
 
     def render(self,
-            layers = {},
             x = 0.0,
             y = 0.0,
             rot = 0,
             mirror = False,
-            view_box = svg_common.ViewBox()):
-        if self.layer in layers:
-            if self.layer in COLOR:
-                xy1 = Vec2r(self.x1, self.y1)
-                xy2 = Vec2r(self.x2, self.y1)
-                xy3 = Vec2r(self.x2, self.y2)
-                xy4 = Vec2r(self.x1, self.y2)
+            view_box = None):
+        if self.layer in COLOR:
+            xy1 = Vec2r(self.x1, self.y1)
+            xy2 = Vec2r(self.x2, self.y1)
+            xy3 = Vec2r(self.x2, self.y2)
+            xy4 = Vec2r(self.x1, self.y2)
+            rotate(xy1, Vec2r(x, y), rot, mirror)
+            rotate(xy2, Vec2r(x, y), rot, mirror)
+            rotate(xy3, Vec2r(x, y), rot, mirror)
+            rotate(xy4, Vec2r(x, y), rot, mirror)
+            view_box.expand(xy1.x, -xy1.y)
+            view_box.expand(xy2.x, -xy2.y)
+            view_box.expand(xy3.x, -xy3.y)
+            view_box.expand(xy4.x, -xy4.y)
+            view_box.append(self.layer,
+                    '<polygon points="%f,%f %f,%f %f,%f %f,%f" stroke="%s" stroke-width="0.2" fill="none"/>' % (
+                    xy1.x, -xy1.y, xy2.x, -xy2.y, xy3.x, -xy3.y, xy4.x, -xy4.y,
+                    COLOR[self.layer]))
+            xy1 = Vec2r(self.x1 + 4, self.y1 + 4)
+            xy2 = Vec2r(self.x2 - 4, self.y1 + 4)
+            xy3 = Vec2r(self.x2 - 4, self.y2 - 4)
+            xy4 = Vec2r(self.x1 + 4, self.y2 - 4)
+            rotate(xy1, Vec2r(x, y), rot, mirror)
+            rotate(xy2, Vec2r(x, y), rot, mirror)
+            rotate(xy3, Vec2r(x, y), rot, mirror)
+            rotate(xy4, Vec2r(x, y), rot, mirror)
+            view_box.append(self.layer,
+                    '<polygon points="%f,%f %f,%f %f,%f %f,%f" stroke="%s" stroke-width="0.1" fill="none"/>' % (
+                    xy1.x, -xy1.y, xy2.x, -xy2.y, xy3.x, -xy3.y, xy4.x, -xy4.y,
+                    COLOR[self.layer]))
+            col_span = ((self.x2 - 4) - (self.x1 + 4)) / self.columns
+            for ix in range(1, self.columns):
+                xy1 = Vec2r(self.x1 + ix * col_span + 4, self.y1)
+                xy2 = Vec2r(self.x1 + ix * col_span + 4, self.y1 + 4)
                 rotate(xy1, Vec2r(x, y), rot, mirror)
                 rotate(xy2, Vec2r(x, y), rot, mirror)
-                rotate(xy3, Vec2r(x, y), rot, mirror)
-                rotate(xy4, Vec2r(x, y), rot, mirror)
-                view_box.expand(xy1.x, -xy1.y)
-                view_box.expand(xy2.x, -xy2.y)
-                view_box.expand(xy3.x, -xy3.y)
-                view_box.expand(xy4.x, -xy4.y)
-                yield '<polygon points="%f,%f %f,%f %f,%f %f,%f" stroke="%s" stroke-width="0.2" fill="none"/>' % (
-                        xy1.x, -xy1.y, xy2.x, -xy2.y, xy3.x, -xy3.y, xy4.x, -xy4.y,
-                        COLOR[self.layer])
-                xy1 = Vec2r(self.x1 + 4, self.y1 + 4)
-                xy2 = Vec2r(self.x2 - 4, self.y1 + 4)
-                xy3 = Vec2r(self.x2 - 4, self.y2 - 4)
-                xy4 = Vec2r(self.x1 + 4, self.y2 - 4)
+                view_box.append(self.layer,
+                        '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="%s" stroke-width="0.1"/>' % (
+                        xy1.x, -xy1.y, xy2.x, -xy2.y, COLOR[self.layer]))
+                xy1 = Vec2r(self.x1 + ix * col_span + 4, self.y2)
+                xy2 = Vec2r(self.x1 + ix * col_span + 4, self.y2 - 4)
                 rotate(xy1, Vec2r(x, y), rot, mirror)
                 rotate(xy2, Vec2r(x, y), rot, mirror)
-                rotate(xy3, Vec2r(x, y), rot, mirror)
-                rotate(xy4, Vec2r(x, y), rot, mirror)
-                yield '<polygon points="%f,%f %f,%f %f,%f %f,%f" stroke="%s" stroke-width="0.1" fill="none"/>' % (
-                        xy1.x, -xy1.y, xy2.x, -xy2.y, xy3.x, -xy3.y, xy4.x, -xy4.y,
-                        COLOR[self.layer])
-                col_span = ((self.x2 - 4) - (self.x1 + 4)) / self.columns
-                for ix in range(1, self.columns):
-                    xy1 = Vec2r(self.x1 + ix * col_span + 4, self.y1)
-                    xy2 = Vec2r(self.x1 + ix * col_span + 4, self.y1 + 4)
-                    rotate(xy1, Vec2r(x, y), rot, mirror)
-                    rotate(xy2, Vec2r(x, y), rot, mirror)
-                    yield '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="%s" stroke-width="0.1"/>' % (
-                            xy1.x, -xy1.y, xy2.x, -xy2.y, COLOR[self.layer])
-                    xy1 = Vec2r(self.x1 + ix * col_span + 4, self.y2)
-                    xy2 = Vec2r(self.x1 + ix * col_span + 4, self.y2 - 4)
-                    rotate(xy1, Vec2r(x, y), rot, mirror)
-                    rotate(xy2, Vec2r(x, y), rot, mirror)
-                    yield '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="%s" stroke-width="0.1"/>' % (
-                            xy1.x, -xy1.y, xy2.x, -xy2.y, COLOR[self.layer])
-                for ix in range(1, self.columns + 1):
-                    xy = Vec2r(self.x1 + (ix - 0.5) * col_span + 4 - 1.5, self.y1 + 1)
-                    rotate(xy, Vec2r(x, y), rot, mirror)
-                    yield render_text(str(ix), xy, 3.0, COLOR[self.layer])
-                    xy = Vec2r(self.x1 + (ix - 0.5) * col_span + 4 - 1.5, self.y2 -3)
-                    rotate(xy, Vec2r(x, y), rot, mirror)
-                    yield render_text(str(ix), xy, 3.0, COLOR[self.layer])
-                row_span = ((self.y2 - 4) - (self.y1 + 4)) / self.rows
-                for iy in range(1, self.rows):
-                    xy1 = Vec2r(self.x1, self.y1 + iy * row_span + 4)
-                    xy2 = Vec2r(self.x1 + 4, self.y1 + iy * row_span + 4)
-                    rotate(xy1, Vec2r(x, y), rot, mirror)
-                    rotate(xy2, Vec2r(x, y), rot, mirror)
-                    yield '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="%s" stroke-width="0.1"/>' % (
-                            xy1.x, -xy1.y, xy2.x, -xy2.y, COLOR[self.layer])
-                    xy1 = Vec2r(self.x2, self.y1 + iy * row_span + 4)
-                    xy2 = Vec2r(self.x2 - 4, self.y1 + iy * row_span + 4)
-                    rotate(xy1, Vec2r(x, y), rot, mirror)
-                    rotate(xy2, Vec2r(x, y), rot, mirror)
-                    yield '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="%s" stroke-width="0.1"/>' % (
-                            xy1.x, -xy1.y, xy2.x, -xy2.y, COLOR[self.layer])
-                for iy in range(1, self.rows + 1):
-                    xy = Vec2r(self.x1 + 0.5, self.y1 + (iy - 0.5) * row_span + 4 - 1)
-                    rotate(xy, Vec2r(x, y), rot, mirror)
-                    yield render_text(chr(ord('A') + self.rows - iy), xy, 3.0, COLOR[self.layer])
-                    xy = Vec2r(self.x2 - 3.5, self.y1 + (iy - 0.5) * row_span + 4 - 1)
-                    rotate(xy, Vec2r(x, y), rot, mirror)
-                    yield render_text(chr(ord('A') + self.rows - iy), xy, 3.0, COLOR[self.layer])
+                view_box.append(self.layer,
+                        '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="%s" stroke-width="0.1"/>' % (
+                        xy1.x, -xy1.y, xy2.x, -xy2.y, COLOR[self.layer]))
+            for ix in range(1, self.columns + 1):
+                xy = Vec2r(self.x1 + (ix - 0.5) * col_span + 4 - 1.5, self.y1 + 1)
+                rotate(xy, Vec2r(x, y), rot, mirror)
+                view_box.append(self.layer,
+                        render_text(str(ix), xy, 3.0, COLOR[self.layer]))
+                xy = Vec2r(self.x1 + (ix - 0.5) * col_span + 4 - 1.5, self.y2 -3)
+                rotate(xy, Vec2r(x, y), rot, mirror)
+                view_box.append(self.layer,
+                        render_text(str(ix), xy, 3.0, COLOR[self.layer]))
+            row_span = ((self.y2 - 4) - (self.y1 + 4)) / self.rows
+            for iy in range(1, self.rows):
+                xy1 = Vec2r(self.x1, self.y1 + iy * row_span + 4)
+                xy2 = Vec2r(self.x1 + 4, self.y1 + iy * row_span + 4)
+                rotate(xy1, Vec2r(x, y), rot, mirror)
+                rotate(xy2, Vec2r(x, y), rot, mirror)
+                view_box.append(self.layer,
+                        '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="%s" stroke-width="0.1"/>' % (
+                        xy1.x, -xy1.y, xy2.x, -xy2.y, COLOR[self.layer]))
+                xy1 = Vec2r(self.x2, self.y1 + iy * row_span + 4)
+                xy2 = Vec2r(self.x2 - 4, self.y1 + iy * row_span + 4)
+                rotate(xy1, Vec2r(x, y), rot, mirror)
+                rotate(xy2, Vec2r(x, y), rot, mirror)
+                view_box.append(self.layer,
+                        '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="%s" stroke-width="0.1"/>' % (
+                        xy1.x, -xy1.y, xy2.x, -xy2.y, COLOR[self.layer]))
+            for iy in range(1, self.rows + 1):
+                xy = Vec2r(self.x1 + 0.5, self.y1 + (iy - 0.5) * row_span + 4 - 1)
+                rotate(xy, Vec2r(x, y), rot, mirror)
+                view_box.append(self.layer,
+                        render_text(chr(ord('A') + self.rows - iy), xy, 3.0, COLOR[self.layer]))
+                xy = Vec2r(self.x2 - 3.5, self.y1 + (iy - 0.5) * row_span + 4 - 1)
+                rotate(xy, Vec2r(x, y), rot, mirror)
+                view_box.append(self.layer,
+                        render_text(chr(ord('A') + self.rows - iy), xy, 3.0, COLOR[self.layer]))
 
 
 class VisualElementBase(object):
@@ -717,110 +764,87 @@ class VisualElementBase(object):
                 self.smds.append(Smd(smd_data))
 
     def render(self,
-            layers = {},
             x = 0.0,
             y = 0.0,
             rot = 0,
             mirror = False,
             replace = {},
             connects = {},
-            view_box = svg_common.ViewBox(),
+            view_box = None,
             smashed = False,
             mirror_text = False,
             attributes = {}):
         for wire in self.wires:
-            for output in wire.render(layers = layers,
-                    x = x,
+            wire.render(x = x,
                     y = y,
                     rot = rot,
                     mirror = mirror,
-                    view_box = view_box):
-                yield output
+                    view_box = view_box)
         for circle in self.circles:
-            for output in circle.render(layers = layers,
-                    x = x,
+            circle.render(x = x,
                     y = y,
                     rot = rot,
                     mirror = mirror,
-                    view_box = view_box):
-                yield output
+                    view_box = view_box)
         for hole in self.holes:
-            for output in hole.render(layers = layers,
-                    x = x,
+            hole.render(x = x,
                     y = y,
                     rot = rot,
                     mirror = mirror,
-                    view_box = view_box):
-                yield output
+                    view_box = view_box)
         for rectangle in self.rectangles:
-            for output in rectangle.render(layers = layers,
-                    x = x,
+            rectangle.render(x = x,
                     y = y,
                     rot = rot,
                     mirror = mirror,
-                    view_box = view_box):
-                yield output
+                    view_box = view_box)
         for polygon in self.polygons:
-            for output in polygon.render(layers = layers,
-                    x = x,
+            polygon.render(x = x,
                     y = y,
                     rot = rot,
                     mirror = mirror,
                     signal_fill = self.signal_fill,
-                    view_box = view_box):
-                yield output
+                    view_box = view_box)
         for frame in self.frames:
-            for output in frame.render(layers = layers,
-                    x = x,
+            frame.render(x = x,
                     y = y,
                     rot = rot,
                     mirror = mirror,
-                    view_box = view_box):
-                yield output
+                    view_box = view_box)
         for pin in self.pins:
-            for output in pin.render(layers = layers,
-                    x = x,
+            pin.render(x = x,
                     y = y,
                     rot = rot,
                     mirror = mirror,
                     connects = connects,
-                    view_box = view_box):
-                yield output
+                    view_box = view_box)
         for smd in self.smds:
-            for output in smd.render(layers = layers,
-                    x = x,
+            smd.render(x = x,
                     y = y,
                     rot = rot,
                     mirror = mirror,
-                    view_box = view_box):
-                yield output
+                    view_box = view_box)
         for pad in self.pads:
-            for output in pad.render(layers = layers,
-                    x = x,
+            pad.render(x = x,
                     y = y,
                     rot = rot,
                     mirror = mirror,
-                    view_box = view_box):
-                yield output
+                    view_box = view_box)
         for via in self.vias:
-            for output in via.render(layers = layers,
-                    x = x,
+            via.render(x = x,
                     y = y,
                     rot = rot,
                     mirror = mirror,
-                    view_box = view_box):
-                yield output
+                    view_box = view_box)
         for text in self.texts:
             if not smashed or text.text[0] != '>':
-                for output in text.render(layers = layers,
-                        x = x,
+                text.render(x = x,
                         y = y,
                         rot = rot,
                         mirror = mirror,
                         mirror_text = mirror_text,
                         replace = replace,
-                        view_box = view_box):
-                    yield output
+                        view_box = view_box)
         if smashed:
             for name, attribute in attributes.items():
                 text = copy.deepcopy(attribute)
@@ -828,16 +852,15 @@ class VisualElementBase(object):
                 text.x = 0
                 text.y = 0
                 text.rot = 0
-                text.mirror = False
-                for output in text.render(layers = layers,
-                        x = attribute.x,
+                text.mirror = attribute.mirror
+                text.render(x = attribute.x,
                         y = attribute.y,
                         rot = attribute.rot,
-                        mirror = attribute.mirror,
+                        mirror = False,
                         mirror_text = mirror_text,
                         replace = replace,
-                        view_box = view_box):
-                    yield output
+                        no_mirror = True,
+                        view_box = view_box)
 
 class Package(VisualElementBase):
     def __init__(self, data):
@@ -954,18 +977,16 @@ class Element(object):
                 self.attributes[attribute_data['@name']] = Text(attribute_data)
 
     def render(self,
-            layers = {},
             libraries = {},
             replace = {},
             mirror_text = False,
-            view_box = svg_common.ViewBox()):
+            view_box = None):
         replace2 = copy.deepcopy(replace)
         library = libraries[self.library]
         replace2['>NAME'] = self.name
         replace2['>VALUE'] = self.value
 
-        for output in library.packages[self.package].render(
-                layers = layers,
+        library.packages[self.package].render(
                 x = self.x, y = self.y,
                 rot = self.rot,
                 mirror = self.mirror,
@@ -973,8 +994,7 @@ class Element(object):
                 mirror_text = mirror_text,
                 view_box = view_box,
                 smashed = self.smashed,
-                attributes = self.attributes):
-            yield output
+                attributes = self.attributes)
 
 class Instance(object):
     def __init__(self, data):
@@ -1001,11 +1021,10 @@ class Instance(object):
                 self.attributes[attribute_data['@name']] = Text(attribute_data)
 
     def render(self,
-            layers = {},
             libraries = {},
             parts = {},
             replace = {},
-            view_box = svg_common.ViewBox()):
+            view_box = None):
         replace2 = copy.deepcopy(replace)
         part = parts[self.part]
         library = libraries[part.library]
@@ -1021,8 +1040,7 @@ class Instance(object):
         else:
             replace2['>VALUE'] = deviceset.name
 
-        for output in library.symbols[gate.symbol].render(
-                layers = layers,
+        library.symbols[gate.symbol].render(
                 x = self.x, y = self.y,
                 rot = self.rot,
                 mirror = self.mirror,
@@ -1030,8 +1048,7 @@ class Instance(object):
                 connects = deviceset.devices[part.device].connects,
                 view_box = view_box,
                 smashed = self.smashed,
-                attributes = self.attributes):
-            yield output
+                attributes = self.attributes)
 
 class Busses(object):
     def __init__(self, data):
@@ -1054,22 +1071,15 @@ class Segment(object):
                 self.labels.append(Label(label_data))
 
     def render(self,
-            layers = {},
-            view_box = svg_common.ViewBox(),
+            view_box = None,
             net_name = ''):
         for wire in self.wires:
-            for output in wire.render(layers = layers,
-                    view_box = view_box):
-                yield output
+            wire.render(view_box = view_box)
         for junction in self.junctions:
-            for output in junction.render(layers = layers,
-                    view_box = view_box):
-                yield output
+            junction.render(view_box = view_box)
         for label in self.labels:
-            for output in label.render(layers = layers,
-                    view_box = view_box,
-                    net_name = net_name):
-                yield output
+            label.render(view_box = view_box,
+                    net_name = net_name)
 
 class Net(object):
     def __init__(self, data):
@@ -1080,13 +1090,10 @@ class Net(object):
             self.segments.append(Segment(segment_data))
 
     def render(self,
-            layers = {},
-            view_box = svg_common.ViewBox()):
+            view_box = None):
         for segment in self.segments:
-            for output in segment.render(layers = layers,
-                    view_box = view_box,
-                    net_name = self.name):
-                yield output
+            segment.render(view_box = view_box,
+                    net_name = self.name)
 
 
 class Sheet(object):
@@ -1105,18 +1112,14 @@ class Sheet(object):
             self.nets.append(Net(net_data))
 
     def render(self,
-            layers = {},
             libraries = {},
             parts = {},
             replace = {},
-            view_box = svg_common.ViewBox()):
+            view_box = None):
         for net in self.nets:
-            for output in net.render(layers = layers):
-                yield output
+            net.render(view_box = view_box)
         for instance in self.instances:
-            for output in instance.render(layers = layers,
-                    libraries = libraries,
+            instance.render(libraries = libraries,
                     parts = parts,
                     replace = replace,
-                    view_box = view_box):
-                yield output
+                    view_box = view_box)
