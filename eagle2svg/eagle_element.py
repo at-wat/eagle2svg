@@ -304,9 +304,14 @@ class Pad(object):
         rotate(xy, Vec2r(x, y), rot, mirror)
         view_box.expand(xy.x - self.diameter, -xy.y - self.diameter)
         view_box.expand(xy.x + self.diameter, -xy.y + self.diameter)
-        yield '<circle cx="%f" cy="%f" r="%f" fill="green" stroke="none"/>' % (
-                xy.x, -xy.y,
-                self.diameter / 2.0)
+        if self.shape == 'round':
+            yield '<circle cx="%f" cy="%f" r="%f" fill="green" stroke="none"/>' % (
+                    xy.x, -xy.y,
+                    self.diameter / 2.0)
+        elif self.shape == 'square':
+            yield '<rect x="%f" y="%f" width="%f" height="%f" fill="green" stroke="none" transform="rotate(%f 0 0)"/>' % (
+                    xy.x - self.diameter / 2.0, -xy.y - self.diameter / 2.0,
+                    self.diameter,  self.diameter, -xy.rot)
         yield '<circle cx="%f" cy="%f" r="%f" fill="black" stroke="none"/>' % (
                 xy.x, -xy.y,
                 self.drill / 2.0)
