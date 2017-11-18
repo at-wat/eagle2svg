@@ -3,9 +3,7 @@ import copy
 import os
 from datetime import datetime
 
-import svg_common
-import eagle_element
-import eagle_types
+from eagle2svg import svg_common, eagle_element, eagle_types
 
 class EagleFileBase(object):
     def __init__(self, data):
