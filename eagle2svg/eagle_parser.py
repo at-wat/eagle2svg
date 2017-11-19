@@ -59,7 +59,7 @@ class Board(EagleFileBase):
         print('<style type="text/css">:root{background-color: black;}'
               + ' *{font-family:Consolas, \'Courier New\', '
               + 'Courier, Monaco, monospace;}</style>')
-        print('<rect x="%f" y="%f" width="%f" height="%f" full="black"/>'
+        print('<rect x="%f" y="%f" width="%f" height="%f" fill="black"/>'
               % (view_box.x1, view_box.y1,
                  view_box.x2 - view_box.x1, view_box.y2 - view_box.y1))
         for layer in layers:
@@ -108,7 +108,7 @@ class Schematic(EagleFileBase):
         print('<style type="text/css">:root{background-color: white;}'
               + ' *{font-family:Consolas, \'Courier New\','
               + ' Courier, Monaco, monospace;}</style>')
-        print('<rect x="%f" y="%f" width="%f" height="%f" full="white"/>'
+        print('<rect x="%f" y="%f" width="%f" height="%f" fill="white"/>'
               % (view_box.x1, view_box.y1,
                  view_box.x2 - view_box.x1, view_box.y2 - view_box.y1))
         for layer in layers:
