@@ -708,7 +708,7 @@ class Frame(object):
             view_box.append(
                 self.layer,
                 ('<polygon points="%f,%f %f,%f %f,%f %f,%f"'
-                + ' stroke="%s" stroke-width="0.1" fill="none"/>')
+                 + ' stroke="%s" stroke-width="0.1" fill="none"/>')
                 % (xy1.x, -xy1.y, xy2.x, -xy2.y,
                    xy3.x, -xy3.y, xy4.x, -xy4.y,
                    COLOR[self.layer]))
