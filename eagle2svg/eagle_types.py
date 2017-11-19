@@ -7,6 +7,7 @@ def named_array(data):
     else:
         return [data[key]]
 
+
 def array(data):
     if isinstance(data, list):
         return data
