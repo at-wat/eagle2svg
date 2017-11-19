@@ -15,7 +15,6 @@ do
   pyflakes ${py} >> ${LOG} || fail=1; true
 done
 
-source ./gh-pr-comment.sh
 FAILED="Failed on python ${TRAVIS_PYTHON_VERSION}"
 PASSED="Passed on python ${TRAVIS_PYTHON_VERSION}"
 

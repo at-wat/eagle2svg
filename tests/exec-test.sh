@@ -2,8 +2,6 @@
 
 set -eu
 
-source ./gh-pr-comment.sh
-
 FAILED="Failed on python ${TRAVIS_PYTHON_VERSION}"
 PASSED="Passed on python ${TRAVIS_PYTHON_VERSION}"
 
@@ -21,7 +19,16 @@ cairosvg -f png -d 450 -o test-top.brd.png test-top.brd.svg \
 cairosvg -f png -d 450 -o test-bottom.brd.png test-bottom.brd.svg \
   || (gh-pr-comment "${FAILED}" '`cairosvg -f png test.sch.svg` failed.'; false)
 
+image1=`gh-pr-upload test.sch.png`
+image2=`gh-pr-upload test-top.brd.png`
+image3=`gh-pr-upload test-bottom.brd.png`
+
 gh-pr-comment "${PASSED}" "all tests passed
 \`\`\`
 `ls -lh *.svg *.png`
-\`\`\`"
+\`\`\`
+
+![test.sch.png](${image1})
+![test-top.brd.png](${image2})
+![test-bottom.brd.png](${image3})
+"
