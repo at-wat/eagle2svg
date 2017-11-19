@@ -9,3 +9,11 @@ install:
 
 script:
   - ./tests/exec-test.sh
+
+deploy:
+  provider: pypi
+  user: at-wat
+  password:
+    secure: vy+oaB0f1eBHoAz1g8A28mqDIQejWFr6649ZnmZppEccJa6B0rtfPSchbL1RqrzDjfGlTFTnpHsvs228V8qv48dHCu8X30+Ahpff1EAS2APTKx+n2tc/efQATF5MFEqhhNuADPUPGybblkfyGCfw4rMDaPq0zvQuG/YP1l49CS+Ifa1QCVVeD7A/LyXbws2qe/Lt3jKwGw3UcixhMKHmIWAcQNFaPHhzFFmz0Rhdw6Xbg9iNTQjeUvAsnZ24t1zR+TDKg/9BXUDS46Dxdx6PCpTdWabP3rJQT9PVRAEDxv2qCiPXI3rFakRhmKD4Xz7r7FzTWM4MxCFHA/FgSHlQX4+6Qr2D6jdEcXgqhMmweXS4LsPWnQXXpiFovC/yiApYIvGsge/7ofUFv8bhKz9djF6kA7+Pqr7WFDt2S0poG/KQVu/VzCTLZIml1M/24BPaadFZ9sqco5L4WAs5nEg4I3YUm1ho+zsbJ6+lJK9FzUtvrZOmGdHrULm+rMVkESGsc70dMkrNHOW7v+FuWu/ttSZ7SL1sRq6b7fpylbnqPpotKvs8JJ84tv/7l3UhYWNP+IJHLZjbuKoi8ME6r9B/YoMa10sNh7NdtTR4Skxu8BJYfLOl1UPrh6o45iegXvmz/hCH5mpdTWWZY4hUtn/vnl0wfReBB3odN80OS15w0AA=
+  on:
+    tags: true
