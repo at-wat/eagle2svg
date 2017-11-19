@@ -52,12 +52,16 @@ class Board(EagleFileBase):
 
         print('<?xml version="1.0"?>')
         print('<svg version="1.1" xmlns="http://www.w3.org/2000/svg"'
-              + ' viewBox="%f %f %f %f">'
+              + ' viewBox="%f %f %f %f" width="%fmm" height="%fmm">'
               % (view_box.x1, view_box.y1,
+                 view_box.x2 - view_box.x1, view_box.y2 - view_box.y1,
                  view_box.x2 - view_box.x1, view_box.y2 - view_box.y1))
         print('<style type="text/css">:root{background-color: black;}'
               + ' *{font-family:Consolas, \'Courier New\', '
               + 'Courier, Monaco, monospace;}</style>')
+        print('<rect x="%f" y="%f" width="%f" height="%f" full="black"/>'
+              % (view_box.x1, view_box.y1,
+                 view_box.x2 - view_box.x1, view_box.y2 - view_box.y1))
         for layer in layers:
             if layer in view_box.layers:
                 for line in view_box.layers[layer]:
@@ -97,12 +101,16 @@ class Schematic(EagleFileBase):
 
         print('<?xml version="1.0"?>')
         print('<svg version="1.1" xmlns="http://www.w3.org/2000/svg"'
-              + ' viewBox="%f %f %f %f">'
+              + ' viewBox="%f %f %f %f" width="%fmm" height="%fmm">'
               % (view_box.x1, view_box.y1,
+                 view_box.x2 - view_box.x1, view_box.y2 - view_box.y1,
                  view_box.x2 - view_box.x1, view_box.y2 - view_box.y1))
         print('<style type="text/css">:root{background-color: white;}'
               + ' *{font-family:Consolas, \'Courier New\','
               + ' Courier, Monaco, monospace;}</style>')
+        print('<rect x="%f" y="%f" width="%f" height="%f" full="white"/>'
+              % (view_box.x1, view_box.y1,
+                 view_box.x2 - view_box.x1, view_box.y2 - view_box.y1))
         for layer in layers:
             if layer in view_box.layers:
                 for line in view_box.layers[layer]:
