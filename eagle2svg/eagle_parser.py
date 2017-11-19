@@ -5,12 +5,14 @@ from datetime import datetime
 
 from eagle2svg import svg_common, eagle_element, eagle_types
 
+
 class EagleFileBase(object):
     def __init__(self, data):
         self.libraries = {}
         for library_data in eagle_types.named_array(data['libraries']):
             library = eagle_element.Library(library_data)
             self.libraries[library.name] = library
+
 
 class Board(EagleFileBase):
     def __init__(self, data):
@@ -27,22 +29,21 @@ class Board(EagleFileBase):
             self.signals[signal.name] = signal
 
     def render(self,
-            sheet = 0,
-            layers = {},
-            replace = {}):
+               sheet=0,
+               layers={},
+               replace={}):
         replace2 = copy.deepcopy(replace)
         view_box = svg_common.ViewBox()
-        svg_contents = ''
-        self.plain.render(replace = replace2,
-                mirror_text = True,
-                view_box = view_box)
+        self.plain.render(replace=replace2,
+                          mirror_text=True,
+                          view_box=view_box)
         for key, element in self.elements.items():
-            element.render(libraries = self.libraries,
-                    replace = replace2,
-                    mirror_text = True,
-                    view_box = view_box)
+            element.render(libraries=self.libraries,
+                           replace=replace2,
+                           mirror_text=True,
+                           view_box=view_box)
         for key, signal in self.signals.items():
-            signal.render(view_box = view_box)
+            signal.render(view_box=view_box)
 
         view_box.x1 = view_box.x1 - 1
         view_box.y1 = view_box.y1 - 1
@@ -52,7 +53,8 @@ class Board(EagleFileBase):
         print('<?xml version="1.0"?>')
         print('<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="%f %f %f %f">' % (
             view_box.x1, view_box.y1, view_box.x2 - view_box.x1, view_box.y2 - view_box.y1))
-        print('<style type="text/css">:root{background-color: black;} *{font-family:Consolas, \'Courier New\', Courier, Monaco, monospace;}</style>')
+        print(
+            '<style type="text/css">:root{background-color: black;} *{font-family:Consolas, \'Courier New\', Courier, Monaco, monospace;}</style>')
         for layer in layers:
             if layer in view_box.layers:
                 for line in view_box.layers[layer]:
@@ -74,17 +76,16 @@ class Schematic(EagleFileBase):
             self.parts[part.name] = part
 
     def render(self,
-            sheet = 0,
-            layers = {},
-            replace = {}):
+               sheet=0,
+               layers={},
+               replace={}):
         replace2 = copy.deepcopy(replace)
         replace2['>SHEET'] = str(sheet + 1) + '/' + str(len(self.sheets))
         view_box = svg_common.ViewBox()
-        svg_contents = ''
-        self.sheets[sheet].render(libraries = self.libraries,
-                parts = self.parts,
-                replace = replace2,
-                view_box = view_box)
+        self.sheets[sheet].render(libraries=self.libraries,
+                                  parts=self.parts,
+                                  replace=replace2,
+                                  view_box=view_box)
 
         view_box.x1 = view_box.x1 - 1
         view_box.y1 = view_box.y1 - 1
@@ -94,7 +95,8 @@ class Schematic(EagleFileBase):
         print('<?xml version="1.0"?>')
         print('<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="%f %f %f %f">' % (
             view_box.x1, view_box.y1, view_box.x2 - view_box.x1, view_box.y2 - view_box.y1))
-        print('<style type="text/css">:root{background-color: white;} *{font-family:Consolas, \'Courier New\', Courier, Monaco, monospace;}</style>')
+        print(
+            '<style type="text/css">:root{background-color: white;} *{font-family:Consolas, \'Courier New\', Courier, Monaco, monospace;}</style>')
         for layer in layers:
             if layer in view_box.layers:
                 for line in view_box.layers[layer]:
@@ -112,13 +114,14 @@ class Eagle(object):
             self.data = Schematic(data['eagle']['drawing']['schematic'])
         if 'board' in data['eagle']['drawing']:
             self.data = Board(data['eagle']['drawing']['board'])
-        
-        self.replace = {}
-        self.replace['>DRAWING_NAME'], ext = os.path.splitext(os.path.basename(filename))
-        self.replace['>LAST_DATE_TIME'] = datetime.fromtimestamp(
-                int(os.path.getmtime(filename)))
 
-    def render(self, sheet = 0, layers = {}):
-        return self.data.render(sheet = sheet,
-                layers = layers,
-                replace = self.replace)
+        self.replace = {}
+        self.replace['>DRAWING_NAME'], ext = os.path.splitext(
+            os.path.basename(filename))
+        self.replace['>LAST_DATE_TIME'] = datetime.fromtimestamp(
+            int(os.path.getmtime(filename)))
+
+    def render(self, sheet=0, layers={}):
+        return self.data.render(sheet=sheet,
+                                layers=layers,
+                                replace=self.replace)
