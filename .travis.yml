@@ -5,8 +5,7 @@ python:
 
 install:
   - python setup.py install
+  - pip install cairosvg==1.0.22
 
 script:
-  - eagle2svg ./tests/data/test.brd 0 1 20 17 18 21 25 19 > test-top.brd.svg
-  - eagle2svg ./tests/data/test.brd 0 16 20 17 18 22 26 19 > test-bottom.brd.svg
-  - eagle2svg ./tests/data/test.sch > test.sch.svg
+  - ./tests/exec-test.sh
