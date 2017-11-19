@@ -22,5 +22,7 @@ cairosvg -f png -d 450 -o test-top.brd.png test-top.brd.svg \
 cairosvg -f png -d 450 -o test-bottom.brd.png test-bottom.brd.svg \
   || (gh-pr-comment "${FAILED}" '`cairosvg -f png test.sch.svg` failed.'; false)
 
-FILES=`ls -lh *.svg *.png`
-gh-pr-comment "${PASSED}" "all tests passed\n```${FILES}```"
+gh-pr-comment "${PASSED}" "all tests passed
+\`\`\`
+`ls -lh *.svg *.png`
+\`\`\`"
