@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
 import eagle2svg
+import os
 
 setup(
     name='eagle2svg',
@@ -13,5 +14,5 @@ setup(
     entry_points={
         'console_scripts': ['eagle2svg = eagle2svg.render:render_main']
     },
-    license="BSD"
+     license="BSD"
 )
