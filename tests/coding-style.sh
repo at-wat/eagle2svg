@@ -12,7 +12,7 @@ fail=0
 for py in ${PY}
 do
   pycodestyle ${py} >> ${LOG} || fail=1; true
-  pyflakes ${py} 2>> ${LOG} || fail=1; true
+  pyflakes ${py} >> ${LOG} || fail=1; true
 done
 
 source ./gh-pr-comment.sh
