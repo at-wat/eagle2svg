@@ -5,7 +5,7 @@ python:
 
 install:
   - python setup.py install
-  - pip install cairosvg==1.0.22
+  - pip install cairosvg==1.0.22 pycodestyle pyflakes
   - wget -q https://raw.githubusercontent.com/at-wat/gh-pr-comment/master/gh-pr-comment.sh
 
 script:
