@@ -4,8 +4,7 @@ python:
   - 3.6
 
 install:
-  - wget -q https://raw.githubusercontent.com/at-wat/gh-pr-comment/master/gh-pr-comment.sh
-  - pip install cairosvg==1.0.22 pycodestyle pyflakes
+  - pip install cairosvg==1.0.22 pycodestyle pyflakes gh-pr-comment
   - ./tests/coding-style.sh
   - python setup.py install
 
