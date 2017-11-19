@@ -8,7 +8,10 @@ setup(
     url='https://github.com/at-wat/eagle2svg',
     author='Atsushi Watanabe',
     author_email='atsushi.w@ieee.org',
-    packages=find_packages(exclude=['tests*']),
+    packages=find_packages(exclude=['tests']),
     install_requires=['xmltodict'],
-    scripts=['scripts/eagle2svg']
+    entry_points={
+        'console_scripts': ['eagle2svg = eagle2svg.render:render_main']
+    },
+    license="BSD"
 )

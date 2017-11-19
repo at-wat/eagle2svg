@@ -1,19 +1,18 @@
 from __future__ import print_function
 import sys
 
-import __init__
-import eagle_parser
+import eagle2svg
 
 
 def render_main(argv = []):
     if len(argv) < 2:
-        print('eagle2svg %s' % __init__.__version__)
+        print('eagle2svg %s' % eagle2svg.__version__)
         print('usage: eagle2svg eagle-file [sheet# [layer# [layer# ...]]]')
         print('- board top layers   : 1 20 17 18 21 25 19')
         print('- board bottom layers: 16 20 17 18 22 26 19')
         sys.exit()
 
-    data = eagle_parser.Eagle(argv[1])
+    data = eagle2svg.eagle_parser.Eagle(argv[1])
     if len(argv) > 2:
         sheet = int(argv[2])
     else:

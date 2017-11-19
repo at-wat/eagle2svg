@@ -1,8 +1,7 @@
 import math
 import copy
 
-import svg_common
-import eagle_types
+from eagle2svg import svg_common, eagle_types
 
 COLOR = {
         1: 'maroon',
