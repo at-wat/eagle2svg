@@ -2,9 +2,6 @@
 
 set -eu
 
-wget -q -P /tmp https://raw.githubusercontent.com/at-wat/gh-pr-comment/master/gh-pr-comment.sh
-source /tmp/gh-pr-comment.sh
-
 FAILED="Failed on python ${TRAVIS_PYTHON_VERSION}"
 PASSED="Passed on python ${TRAVIS_PYTHON_VERSION}"
 

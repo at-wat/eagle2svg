@@ -51,10 +51,13 @@ class Board(EagleFileBase):
         view_box.y2 = view_box.y2 + 1
 
         print('<?xml version="1.0"?>')
-        print('<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="%f %f %f %f">' % (
-            view_box.x1, view_box.y1, view_box.x2 - view_box.x1, view_box.y2 - view_box.y1))
-        print(
-            '<style type="text/css">:root{background-color: black;} *{font-family:Consolas, \'Courier New\', Courier, Monaco, monospace;}</style>')
+        print('<svg version="1.1" xmlns="http://www.w3.org/2000/svg"'
+              + ' viewBox="%f %f %f %f">'
+              % (view_box.x1, view_box.y1,
+                 view_box.x2 - view_box.x1, view_box.y2 - view_box.y1))
+        print('<style type="text/css">:root{background-color: black;}'
+              + ' *{font-family:Consolas, \'Courier New\', '
+              + 'Courier, Monaco, monospace;}</style>')
         for layer in layers:
             if layer in view_box.layers:
                 for line in view_box.layers[layer]:
@@ -93,10 +96,13 @@ class Schematic(EagleFileBase):
         view_box.y2 = view_box.y2 + 1
 
         print('<?xml version="1.0"?>')
-        print('<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="%f %f %f %f">' % (
-            view_box.x1, view_box.y1, view_box.x2 - view_box.x1, view_box.y2 - view_box.y1))
-        print(
-            '<style type="text/css">:root{background-color: white;} *{font-family:Consolas, \'Courier New\', Courier, Monaco, monospace;}</style>')
+        print('<svg version="1.1" xmlns="http://www.w3.org/2000/svg"'
+              + ' viewBox="%f %f %f %f">'
+              % (view_box.x1, view_box.y1,
+                 view_box.x2 - view_box.x1, view_box.y2 - view_box.y1))
+        print('<style type="text/css">:root{background-color: white;}'
+              + ' *{font-family:Consolas, \'Courier New\','
+              + ' Courier, Monaco, monospace;}</style>')
         for layer in layers:
             if layer in view_box.layers:
                 for line in view_box.layers[layer]:

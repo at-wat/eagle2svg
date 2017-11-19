@@ -162,22 +162,23 @@ def render_text(text, xy, size, color,
         len_max = 0
         for line in lines:
             y2 = y2 + size
-            text2 = text2 + '<tspan x="0" y="%f" height="%f" text-anchor="%s">' % (
-                y2, size, align) + line + '</tspan>'
+            text2 = text2 \
+                + '<tspan x="0" y="%f" height="%f" text-anchor="%s">' \
+                % (y2, size, align) + line + '</tspan>'
             if len_max < len(line):
                 len_max = len(line)
         height = len(lines) * size
         if anchor == 'start':
-            transforms = transforms + \
-                ' translate(%f 0)' % (len_max * size * 0.65)
+            transforms = transforms \
+                + ' translate(%f 0)' % (len_max * size * 0.65)
         elif anchor == 'end':
             transforms = transforms + \
                 ' translate(%f 0)' % (-len_max * size * 0.65)
         text_option = ' height="%f" text-anchor="%s"' % (height, anchor)
 
     if valign != 0.0:
-        transforms = transforms + \
-            ' translate(0 %f)' % (height * (valign - 0.2))
+        transforms = transforms \
+            + ' translate(0 %f)' % (height * (valign - 0.2))
 
     return '<text fill="%s" font-size="%f" transform="%s"%s>%s</text>' % (
         color, size,
@@ -231,14 +232,21 @@ class Wire(object):
                     side = 1
                 else:
                     side = 0
-                view_box.append(layer,
-                                '<path d="M %f %f A %f %f 0 0 %d %f %f" fill="none" stroke="%s" stroke-width="%f" stroke-linecap="round"/>' % (
-                                    xy1.x, -xy1.y, r, r, side, xy2.x, -xy2.y, COLOR[layer], self.width))
+                view_box.append(
+                    layer,
+                    '<path d="M %f %f A %f %f 0 0 %d %f %f"'
+                    + ' fill="none" stroke="%s"'
+                    + ' stroke-width="%f" stroke-linecap="round"/>'
+                    % (xy1.x, -xy1.y, r, r, side,
+                       xy2.x, -xy2.y, COLOR[layer], self.width))
             else:
-                view_box.append(layer,
-                                '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="%s" stroke-width="%f" stroke-dasharray="%s" stroke-linecap="round"/>' % (
-                                    xy1.x, -xy1.y, xy2.x, -xy2.y,
-                                    COLOR[layer], self.width, self.stroke_dasharray))
+                view_box.append(
+                    layer,
+                    '<line x1="%f" y1="%f" x2="%f" y2="%f"'
+                    + ' stroke="%s" stroke-width="%f"'
+                    + ' stroke-dasharray="%s" stroke-linecap="round"/>'
+                    % (xy1.x, -xy1.y, xy2.x, -xy2.y,
+                       COLOR[layer], self.width, self.stroke_dasharray))
 
 
 class Junction(object):
@@ -250,7 +258,9 @@ class Junction(object):
                view_box=None):
         view_box.expand(self.x, -self.y)
         view_box.append(91,
-                        '<circle cx="%f" cy="%f" r="0.5" fill="green"/>' % (self.x, -self.y))
+                        '<circle cx="%f" cy="%f"'
+                        + ' r="0.5" fill="green"/>'
+                        % (self.x, -self.y))
 
 
 class Label(object):
@@ -305,10 +315,10 @@ class Circle(object):
             fill = 'none'
             if self.width == 0.0:
                 fill = COLOR[layer]
-            view_box.append(layer,
-                            '<circle cx="%f" cy="%f" r="%f" fill="%s" stroke="%s" stroke-width="%f"/>' % (
-                                xy.x, -xy.y,
-                                self.radius, fill, COLOR[layer], self.width))
+            view_box.append(
+                layer, '<circle cx="%f" cy="%f" r="%f" fill="%s"'
+                + ' stroke="%s" stroke-width="%f"/>'
+                % (xy.x, -xy.y, self.radius, fill, COLOR[layer], self.width))
 
 
 class Pad(object):
@@ -344,19 +354,19 @@ class Pad(object):
         view_box.expand(xy.x - self.diameter, -xy.y - self.diameter)
         view_box.expand(xy.x + self.diameter, -xy.y + self.diameter)
         if self.shape == 'round':
-            view_box.append(17,
-                            '<circle cx="%f" cy="%f" r="%f" fill="green" stroke="none"/>' % (
-                                xy.x, -xy.y,
-                                self.diameter / 2.0))
+            view_box.append(
+                17, '<circle cx="%f" cy="%f" r="%f"'
+                + ' fill="green" stroke="none"/>'
+                % (xy.x, -xy.y, self.diameter / 2.0))
         elif self.shape == 'square':
-            view_box.append(17,
-                            '<rect x="%f" y="%f" width="%f" height="%f" fill="green" stroke="none" transform="rotate(%f 0 0)"/>' % (
-                                xy.x - self.diameter / 2.0, -xy.y - self.diameter / 2.0,
-                                self.diameter,  self.diameter, -xy.rot))
-        view_box.append(17,
-                        '<circle cx="%f" cy="%f" r="%f" fill="black" stroke="none"/>' % (
-                            xy.x, -xy.y,
-                            self.drill / 2.0))
+            view_box.append(
+                17, '<rect x="%f" y="%f" width="%f" height="%f"'
+                + ' fill="green" stroke="none" transform="rotate(%f 0 0)"/>'
+                % (xy.x - self.diameter / 2.0, -xy.y - self.diameter / 2.0,
+                   self.diameter,  self.diameter, -xy.rot))
+        view_box.append(
+            17, '<circle cx="%f" cy="%f" r="%f" fill="black" stroke="none"/>'
+            % (xy.x, -xy.y, self.drill / 2.0))
 
 
 class Hole(object):
@@ -375,10 +385,10 @@ class Hole(object):
         rotate(xy, Vec2r(x, y), rot, mirror)
         view_box.expand(xy.x - self.drill, -xy.y - self.drill)
         view_box.expand(xy.x + self.drill, -xy.y + self.drill)
-        view_box.append(20,
-                        '<circle cx="%f" cy="%f" r="%f" fill="none" stroke="gray" stroke-width="0.05"/>' % (
-                            xy.x, -xy.y,
-                            self.drill / 2.0))
+        view_box.append(
+            20, '<circle cx="%f" cy="%f" r="%f" fill="none"'
+            + ' stroke="gray" stroke-width="0.05"/>'
+            % (xy.x, -xy.y, self.drill / 2.0))
 
 
 class Rectangle(object):
@@ -411,10 +421,11 @@ class Rectangle(object):
             view_box.expand(xy2.x, -xy2.y)
             view_box.expand(xy3.x, -xy3.y)
             view_box.expand(xy4.x, -xy4.y)
-            view_box.append(layer,
-                            '<polygon points="%f,%f %f,%f %f,%f %f,%f" fill="%s"/>' % (
-                                xy1.x, -xy1.y, xy2.x, -xy2.y, xy3.x, -xy3.y, xy4.x, -xy4.y,
-                                COLOR[layer]))
+            view_box.append(
+                layer,
+                '<polygon points="%f,%f %f,%f %f,%f %f,%f" fill="%s"/>'
+                % (xy1.x, -xy1.y, xy2.x, -xy2.y,
+                   xy3.x, -xy3.y, xy4.x, -xy4.y, COLOR[layer]))
 
 
 class Smd(object):
@@ -447,10 +458,11 @@ class Smd(object):
             view_box.expand(xy2.x, -xy2.y)
             view_box.expand(xy3.x, -xy3.y)
             view_box.expand(xy4.x, -xy4.y)
-            view_box.append(layer,
-                            '<polygon points="%f,%f %f,%f %f,%f %f,%f" fill="%s"/>' % (
-                                xy1.x, -xy1.y, xy2.x, -xy2.y, xy3.x, -xy3.y, xy4.x, -xy4.y,
-                                COLOR[layer]))
+            view_box.append(
+                layer,
+                '<polygon points="%f,%f %f,%f %f,%f %f,%f" fill="%s"/>'
+                % (xy1.x, -xy1.y, xy2.x, -xy2.y,
+                   xy3.x, -xy3.y, xy4.x, -xy4.y, COLOR[layer]))
 
 
 class Polygon(object):
@@ -461,7 +473,8 @@ class Polygon(object):
         for v in data['vertex']:
             if '@curve' in v:
                 self.vertex.append(
-                    [Vec2r(float(v['@x']), float(v['@y'])), float(v['@curve'])])
+                    [Vec2r(float(v['@x']), float(v['@y'])),
+                     float(v['@curve'])])
             else:
                 self.vertex.append([Vec2r(float(v['@x']), float(v['@y']))])
         self.vertex.append(self.vertex[0])
@@ -484,8 +497,8 @@ class Polygon(object):
             xyr = copy.deepcopy(self.vertex[0][0])
             rotate(xyr, Vec2r(x, y), rot, mirror)
             view_box.expand(xyr.x, -xyr.y)
-            view_box.append(layer,
-                            '<path d="M%f %f ' % (xyr.x, -xyr.y))
+            view_box.append(
+                layer, '<path d="M%f %f ' % (xyr.x, -xyr.y))
             xy_prev = copy.deepcopy(xyr)
             curve = 0.0
             next_curve = False
@@ -500,18 +513,19 @@ class Polygon(object):
                         side = 1
                     else:
                         side = 0
-                    view_box.append(layer,
-                                    'A%f %f 0 0 %d %f %f ' % (r, r, side, xyr.x, -xyr.y))
+                    view_box.append(
+                        layer, 'A%f %f 0 0 %d %f %f '
+                        % (r, r, side, xyr.x, -xyr.y))
                 else:
-                    view_box.append(layer,
-                                    'L%f %f ' % (xyr.x, -xyr.y))
+                    view_box.append(
+                        layer, 'L%f %f ' % (xyr.x, -xyr.y))
                 xy_prev = copy.deepcopy(xyr)
                 if len(v) > 1:
                     next_curve = True
                     curve = v[1]
-            view_box.append(layer,
-                            'Z" stroke="%s" fill="%s" stroke-width="%f"%s/>' % (
-                                COLOR[layer], COLOR[layer], self.width, option))
+            view_box.append(
+                layer, 'Z" stroke="%s" fill="%s" stroke-width="%f"%s/>'
+                % (COLOR[layer], COLOR[layer], self.width, option))
 
 
 class Text(object):
@@ -572,14 +586,16 @@ class Text(object):
             text = self.text
             if self.text.upper() in replace:
                 text = replace[self.text]
-            view_box.append(layer,
-                            render_text(text,
-                                        xy,
-                                        self.size,
-                                        COLOR[layer],
-                                        mirror_text=mirror_text,
-                                        align=self.align,
-                                        valign=self.valign))
+            view_box.append(
+                layer,
+                render_text(
+                    text,
+                    xy,
+                    self.size,
+                    COLOR[layer],
+                    mirror_text=mirror_text,
+                    align=self.align,
+                    valign=self.valign))
 
 
 class Pin(object):
@@ -617,26 +633,27 @@ class Pin(object):
         rotate(xy2, Vec2r(x, y), rot, mirror)
         view_box.expand(xy1.x, -xy1.y)
         view_box.expand(xy2.x, -xy2.y)
-        view_box.append(93,
-                        '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="maroon" stroke-width="0.15"/>' % (
-                            xy1.x, -xy1.y, xy2.x, -xy2.y))
+        view_box.append(
+            93, '<line x1="%f" y1="%f" x2="%f" y2="%f"'
+            + ' stroke="maroon" stroke-width="0.15"/>'
+            % (xy1.x, -xy1.y, xy2.x, -xy2.y))
 
         if self.visible == 'pin' or self.visible == 'both':
             xy = Vec2r(PIN_LENGTH[self.length] + 1.5, 0.0)
             rotate_text(xy, Vec2r(self.x, self.y), self.rot, self.mirror)
             rotate_text(xy, Vec2r(x, y), rot, mirror)
             xy.y = xy.y + 0.5
-            view_box.append(93,
-                            render_text(self.name, xy, 2.0, 'gray', valign=0.5))
+            view_box.append(
+                93, render_text(self.name, xy, 2.0, 'gray', valign=0.5))
 
         if self.visible == 'pad' or self.visible == 'both':
             xy = Vec2r(1.5, 0.0)
             rotate_text(xy, Vec2r(self.x, self.y), self.rot, self.mirror)
             rotate_text(xy, Vec2r(x, y), rot, mirror)
             xy.y += 1.5
-            view_box.append(93,
-                            render_text(connects[self.name].pad, xy, 1.5, 'gray',
-                                        align='middle', valign=0.5))
+            view_box.append(
+                93, render_text(connects[self.name].pad, xy, 1.5, 'gray',
+                                align='middle', valign=0.5))
 
 
 class Frame(object):
@@ -668,10 +685,13 @@ class Frame(object):
             view_box.expand(xy2.x, -xy2.y)
             view_box.expand(xy3.x, -xy3.y)
             view_box.expand(xy4.x, -xy4.y)
-            view_box.append(self.layer,
-                            '<polygon points="%f,%f %f,%f %f,%f %f,%f" stroke="%s" stroke-width="0.2" fill="none"/>' % (
-                                xy1.x, -xy1.y, xy2.x, -xy2.y, xy3.x, -xy3.y, xy4.x, -xy4.y,
-                                COLOR[self.layer]))
+            view_box.append(
+                self.layer,
+                '<polygon points="%f,%f %f,%f %f,%f %f,%f"'
+                + ' stroke="%s" stroke-width="0.2" fill="none"/>'
+                % (xy1.x, -xy1.y, xy2.x, -xy2.y,
+                   xy3.x, -xy3.y, xy4.x, -xy4.y,
+                   COLOR[self.layer]))
             xy1 = Vec2r(self.x1 + 4, self.y1 + 4)
             xy2 = Vec2r(self.x2 - 4, self.y1 + 4)
             xy3 = Vec2r(self.x2 - 4, self.y2 - 4)
@@ -680,64 +700,79 @@ class Frame(object):
             rotate(xy2, Vec2r(x, y), rot, mirror)
             rotate(xy3, Vec2r(x, y), rot, mirror)
             rotate(xy4, Vec2r(x, y), rot, mirror)
-            view_box.append(self.layer,
-                            '<polygon points="%f,%f %f,%f %f,%f %f,%f" stroke="%s" stroke-width="0.1" fill="none"/>' % (
-                                xy1.x, -xy1.y, xy2.x, -xy2.y, xy3.x, -xy3.y, xy4.x, -xy4.y,
-                                COLOR[self.layer]))
+            view_box.append(
+                self.layer,
+                '<polygon points="%f,%f %f,%f %f,%f %f,%f"'
+                + ' stroke="%s" stroke-width="0.1" fill="none"/>'
+                % (xy1.x, -xy1.y, xy2.x, -xy2.y,
+                   xy3.x, -xy3.y, xy4.x, -xy4.y,
+                   COLOR[self.layer]))
             col_span = ((self.x2 - 4) - (self.x1 + 4)) / self.columns
             for ix in range(1, self.columns):
                 xy1 = Vec2r(self.x1 + ix * col_span + 4, self.y1)
                 xy2 = Vec2r(self.x1 + ix * col_span + 4, self.y1 + 4)
                 rotate(xy1, Vec2r(x, y), rot, mirror)
                 rotate(xy2, Vec2r(x, y), rot, mirror)
-                view_box.append(self.layer,
-                                '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="%s" stroke-width="0.1"/>' % (
-                                    xy1.x, -xy1.y, xy2.x, -xy2.y, COLOR[self.layer]))
+                view_box.append(
+                    self.layer,
+                    '<line x1="%f" y1="%f" x2="%f" y2="%f"'
+                    + ' stroke="%s" stroke-width="0.1"/>'
+                    % (xy1.x, -xy1.y, xy2.x, -xy2.y, COLOR[self.layer]))
                 xy1 = Vec2r(self.x1 + ix * col_span + 4, self.y2)
                 xy2 = Vec2r(self.x1 + ix * col_span + 4, self.y2 - 4)
                 rotate(xy1, Vec2r(x, y), rot, mirror)
                 rotate(xy2, Vec2r(x, y), rot, mirror)
-                view_box.append(self.layer,
-                                '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="%s" stroke-width="0.1"/>' % (
-                                    xy1.x, -xy1.y, xy2.x, -xy2.y, COLOR[self.layer]))
+                view_box.append(
+                    self.layer,
+                    '<line x1="%f" y1="%f" x2="%f" y2="%f"'
+                    + ' stroke="%s" stroke-width="0.1"/>'
+                    % (xy1.x, -xy1.y, xy2.x, -xy2.y, COLOR[self.layer]))
             for ix in range(1, self.columns + 1):
                 xy = Vec2r(self.x1 + (ix - 0.5) *
                            col_span + 4 - 1.5, self.y1 + 1)
                 rotate(xy, Vec2r(x, y), rot, mirror)
                 view_box.append(self.layer,
-                                render_text(str(ix), xy, 3.0, COLOR[self.layer]))
+                                render_text(str(ix), xy,
+                                            3.0, COLOR[self.layer]))
                 xy = Vec2r(self.x1 + (ix - 0.5) *
                            col_span + 4 - 1.5, self.y2 - 3)
                 rotate(xy, Vec2r(x, y), rot, mirror)
                 view_box.append(self.layer,
-                                render_text(str(ix), xy, 3.0, COLOR[self.layer]))
+                                render_text(str(ix), xy,
+                                            3.0, COLOR[self.layer]))
             row_span = ((self.y2 - 4) - (self.y1 + 4)) / self.rows
             for iy in range(1, self.rows):
                 xy1 = Vec2r(self.x1, self.y1 + iy * row_span + 4)
                 xy2 = Vec2r(self.x1 + 4, self.y1 + iy * row_span + 4)
                 rotate(xy1, Vec2r(x, y), rot, mirror)
                 rotate(xy2, Vec2r(x, y), rot, mirror)
-                view_box.append(self.layer,
-                                '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="%s" stroke-width="0.1"/>' % (
-                                    xy1.x, -xy1.y, xy2.x, -xy2.y, COLOR[self.layer]))
+                view_box.append(
+                    self.layer,
+                    '<line x1="%f" y1="%f" x2="%f" y2="%f"'
+                    + ' stroke="%s" stroke-width="0.1"/>'
+                    % (xy1.x, -xy1.y, xy2.x, -xy2.y, COLOR[self.layer]))
                 xy1 = Vec2r(self.x2, self.y1 + iy * row_span + 4)
                 xy2 = Vec2r(self.x2 - 4, self.y1 + iy * row_span + 4)
                 rotate(xy1, Vec2r(x, y), rot, mirror)
                 rotate(xy2, Vec2r(x, y), rot, mirror)
-                view_box.append(self.layer,
-                                '<line x1="%f" y1="%f" x2="%f" y2="%f" stroke="%s" stroke-width="0.1"/>' % (
-                                    xy1.x, -xy1.y, xy2.x, -xy2.y, COLOR[self.layer]))
+                view_box.append(
+                    self.layer,
+                    '<line x1="%f" y1="%f" x2="%f" y2="%f"'
+                    + ' stroke="%s" stroke-width="0.1"/>'
+                    % (xy1.x, -xy1.y, xy2.x, -xy2.y, COLOR[self.layer]))
             for iy in range(1, self.rows + 1):
                 xy = Vec2r(self.x1 + 0.5, self.y1 +
                            (iy - 0.5) * row_span + 4 - 1)
                 rotate(xy, Vec2r(x, y), rot, mirror)
                 view_box.append(self.layer,
-                                render_text(chr(ord('A') + self.rows - iy), xy, 3.0, COLOR[self.layer]))
+                                render_text(chr(ord('A') + self.rows - iy),
+                                            xy, 3.0, COLOR[self.layer]))
                 xy = Vec2r(self.x2 - 3.5, self.y1 +
                            (iy - 0.5) * row_span + 4 - 1)
                 rotate(xy, Vec2r(x, y), rot, mirror)
                 view_box.append(self.layer,
-                                render_text(chr(ord('A') + self.rows - iy), xy, 3.0, COLOR[self.layer]))
+                                render_text(chr(ord('A') + self.rows - iy),
+                                            xy, 3.0, COLOR[self.layer]))
 
 
 class VisualElementBase(object):
