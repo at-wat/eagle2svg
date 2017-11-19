@@ -2,8 +2,6 @@
 
 set -eu
 
-source ./gh-pr-comment.sh
-
 PY=`find . -type d -name build -prune -o -name "*.py" -print | tr '\n' ' '`
 echo "pyflakes targets: ${PY}"
 
@@ -17,6 +15,7 @@ do
   pyflakes ${py} 2>> ${LOG} || fail=1; true
 done
 
+source ./gh-pr-comment.sh
 FAILED="Failed on python ${TRAVIS_PYTHON_VERSION}"
 PASSED="Passed on python ${TRAVIS_PYTHON_VERSION}"
 

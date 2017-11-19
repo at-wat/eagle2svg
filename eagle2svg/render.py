@@ -25,8 +25,11 @@ def render_main():
             layers[int(argv[i])] = True
     else:
         layers = {
-            91: True, 92: True, 93: True, 94: True, 95: True, 96: True, 97: True, 104: True,
-            1: True, 16: True, 17: True, 18: True, 19: True, 20: True, 21: True, 22: True,
-            25: True, 26: True, 29: True, 30: True}
+            91: True, 92: True, 93: True, 94: True,
+            95: True, 96: True, 97: True, 104: True,
+            1: True, 16: True, 17: True, 18: True,
+            19: True, 20: True, 21: True, 22: True,
+            25: True, 26: True, 29: True, 30: True
+        }
 
     data.render(sheet, layers)
