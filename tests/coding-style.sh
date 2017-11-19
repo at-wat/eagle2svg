@@ -2,6 +2,8 @@
 
 set -eu
 
+source ./gh-pr-comment.sh
+
 PY=`find . -type d -name build -prune -o -name "*.py" -print | tr '\n' ' '`
 echo "pyflakes targets: ${PY}"
 

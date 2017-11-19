@@ -6,8 +6,8 @@ python:
 install:
   - python setup.py install
   - pip install cairosvg==1.0.22
-  - wget -q -P /tmp https://raw.githubusercontent.com/at-wat/gh-pr-comment/master/gh-pr-comment.sh
-  - source /tmp/gh-pr-comment.sh
+  - wget -q -P https://raw.githubusercontent.com/at-wat/gh-pr-comment/master/gh-pr-comment.sh
 
 script:
+  - ./tests/coding-style.sh
   - ./tests/exec-test.sh
