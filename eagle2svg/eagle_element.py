@@ -610,7 +610,9 @@ class Pin(object):
         self.visible = 'both'
         if '@visible' in data:
             self.visible = data['@visible']
-        self.length = data['@length']
+        self.length = 'long'
+        if '@length' in data:
+            self.length = data['@length']
         self.rot = 0
         self.mirror = False
         if '@rot' in data:
