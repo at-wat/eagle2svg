@@ -228,7 +228,7 @@ class Wire(object):
             view_box.expand(xy2.x, -xy2.y)
             if hasattr(self, 'curve'):
                 r = curve_radius(xy1, xy2, self.curve)
-                if self.curve < 0:
+                if (self.curve < 0) != mirror:
                     side = 1
                 else:
                     side = 0
@@ -626,7 +626,9 @@ class Pin(object):
         self.visible = 'both'
         if '@visible' in data:
             self.visible = data['@visible']
-        self.length = data['@length']
+        self.length = 'long'
+        if '@length' in data:
+            self.length = data['@length']
         self.rot = 0
         self.mirror = False
         if '@rot' in data:
