@@ -228,7 +228,7 @@ class Wire(object):
             view_box.expand(xy2.x, -xy2.y)
             if hasattr(self, 'curve'):
                 r = curve_radius(xy1, xy2, self.curve)
-                if self.curve < 0:
+                if (self.curve < 0) != mirror:
                     side = 1
                 else:
                     side = 0
