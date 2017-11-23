@@ -367,6 +367,22 @@ class Pad(object):
                  + ' fill="green" stroke="none" transform="rotate(%f 0 0)"/>')
                 % (xy.x - self.diameter / 2.0, -xy.y - self.diameter / 2.0,
                    self.diameter,  self.diameter, -xy.rot))
+        elif self.shape == 'octagon':
+            d = 0.5 * self.diameter / (math.sqrt(2) + 1)
+            view_box.append(
+                17,
+                ('<polygon points="%f,%f %f,%f %f,%f %f,%f'
+                 + ' %f,%f %f,%f %f,%f %f,%f"'
+                 + ' fill="green" stroke="none" transform="rotate(%f 0 0)"/>')
+                % (xy.x - d, -xy.y - self.diameter / 2.0,
+                   xy.x + d, -xy.y - self.diameter / 2.0,
+                   xy.x + self.diameter / 2.0, -xy.y - d,
+                   xy.x + self.diameter / 2.0, -xy.y + d,
+                   xy.x + d, -xy.y + self.diameter / 2.0,
+                   xy.x - d, -xy.y + self.diameter / 2.0,
+                   xy.x - self.diameter / 2.0, -xy.y + d,
+                   xy.x - self.diameter / 2.0, -xy.y - d,
+                   -xy.rot))
         view_box.append(
             17, '<circle cx="%f" cy="%f" r="%f" fill="black" stroke="none"/>'
             % (xy.x, -xy.y, self.drill / 2.0))
