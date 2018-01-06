@@ -559,7 +559,11 @@ class Text(object):
         self.align = 'start'
         self.valign = 0.0
         if '@align' in data:
-            align = data['@align'].split('-')
+            if data['@align'] == 'center':
+                align = 'center-center'.split('-')
+            else:
+                align = data['@align'].split('-')
+
             if align[0] == 'top':
                 self.valign = 1.0
             elif align[0] == 'bottom':
