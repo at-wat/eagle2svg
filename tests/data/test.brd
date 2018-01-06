@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.05" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.025" altunitdist="inch" altunit="inch"/>
+<grid distance="0.5" unitdist="mm" unit="mm" style="lines" multiple="1" display="no" altdistance="0.025" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
@@ -42,7 +42,7 @@
 <layer number="42" name="bRestrict" color="1" fill="10" visible="yes" active="yes"/>
 <layer number="43" name="vRestrict" color="2" fill="10" visible="yes" active="yes"/>
 <layer number="44" name="Drills" color="7" fill="1" visible="no" active="yes"/>
-<layer number="45" name="Holes" color="7" fill="1" visible="no" active="yes"/>
+<layer number="45" name="Holes" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="46" name="Milling" color="3" fill="1" visible="no" active="yes"/>
 <layer number="47" name="Measures" color="7" fill="1" visible="no" active="yes"/>
 <layer number="48" name="Document" color="7" fill="1" visible="yes" active="yes"/>
@@ -60,10 +60,43 @@
 </layers>
 <board>
 <plain>
-<wire x1="0" y1="0" x2="15.875" y2="0" width="0" layer="20"/>
-<wire x1="15.875" y1="0" x2="15.875" y2="10.16" width="0" layer="20"/>
-<wire x1="15.875" y1="10.16" x2="0" y2="10.16" width="0" layer="20"/>
-<wire x1="0" y1="10.16" x2="0" y2="0" width="0" layer="20"/>
+<wire x1="0" y1="0" x2="24.375" y2="0" width="0" layer="20"/>
+<wire x1="24.375" y1="0" x2="24.375" y2="15.66" width="0" layer="20"/>
+<wire x1="24.375" y1="15.66" x2="0" y2="15.66" width="0" layer="20"/>
+<wire x1="0" y1="15.66" x2="0" y2="0" width="0" layer="20"/>
+<text x="17.5" y="4" size="0.6" layer="21" align="top-left">t-l</text>
+<wire x1="17.5" y1="4.5" x2="17.5" y2="0.5" width="0.02" layer="21"/>
+<wire x1="20" y1="4.5" x2="20" y2="0.5" width="0.02" layer="21"/>
+<wire x1="22.5" y1="4.5" x2="22.5" y2="0.5" width="0.02" layer="21"/>
+<wire x1="17" y1="4" x2="23" y2="4" width="0.02" layer="21"/>
+<wire x1="17" y1="2.5" x2="23" y2="2.5" width="0.02" layer="21"/>
+<wire x1="17" y1="1" x2="23" y2="1" width="0.02" layer="21"/>
+<text x="17.5" y="2.5" size="0.6" layer="21" align="center-left">c-l</text>
+<text x="17.5" y="1" size="0.6" layer="21">b-l</text>
+<text x="20" y="4" size="0.6" layer="21" align="top-center">t-c</text>
+<text x="20" y="2.5" size="0.6" layer="21" align="center">c</text>
+<text x="20" y="1" size="0.6" layer="21" align="bottom-center">b-c</text>
+<text x="22.5" y="4" size="0.6" layer="21" align="top-right">t-r</text>
+<text x="22.5" y="2.5" size="0.6" layer="21" align="center-right">c-r</text>
+<text x="22.5" y="1" size="0.6" layer="21" align="bottom-right">b-r</text>
+<text x="20" y="4.5" size="0.7" layer="21" align="bottom-center">Text-align</text>
+<text x="8" y="14.5" size="0.7" layer="21" align="bottom-center">Line-style</text>
+<wire x1="0.5" y1="12.5" x2="15.5" y2="12.5" width="0.05" layer="21" style="longdash"/>
+<wire x1="0.5" y1="11.5" x2="15.5" y2="11.5" width="0.05" layer="21" style="shortdash"/>
+<wire x1="0.5" y1="10.5" x2="15.5" y2="10.5" width="0.05" layer="21" style="dashdot"/>
+<wire x1="0.5" y1="13.5" x2="15.5" y2="13.5" width="0.05" layer="21"/>
+<text x="8" y="13.5" size="0.5" layer="21" align="bottom-center">continuous</text>
+<text x="8" y="12.5" size="0.5" layer="21" align="bottom-center">longdash</text>
+<text x="8" y="11.5" size="0.5" layer="21" align="bottom-center">shortdash</text>
+<text x="8" y="10.5" size="0.5" layer="21" align="bottom-center">dashdot</text>
+<text x="20" y="14.5" size="0.7" layer="21" align="bottom-center">Pad-shape</text>
+<text x="17.5" y="13.5" size="0.5" layer="21" align="bottom-center">square</text>
+<text x="20" y="13.5" size="0.5" layer="21" align="bottom-center">round</text>
+<text x="22.5" y="13.5" size="0.5" layer="21" align="bottom-center">octagon</text>
+<hole x="20" y="8.5" drill="1"/>
+<text x="20" y="9.5" size="0.7" layer="21" align="bottom-center">Hole</text>
+<hole x="17.5" y="8.5" drill="0.3"/>
+<hole x="22.5" y="8.5" drill="1.5"/>
 </plain>
 <libraries>
 <library name="rcl">
@@ -1391,9 +1424,18 @@ design rules under a new name.</description>
 <vertex x="13.97" y="1.905"/>
 <vertex x="1.905" y="1.905"/>
 </polygon>
-<via x="2.54" y="2.54" extent="1-16" drill="0.6" shape="octagon"/>
+<via x="2.54" y="2.54" extent="1-16" drill="0.6"/>
 <via x="12.7" y="6.985" extent="1-16" drill="0.6"/>
 <via x="5.08" y="6.985" extent="1-16" drill="0.6"/>
+</signal>
+<signal name="N$3">
+<via x="17.5" y="12.5" extent="1-16" drill="0.6" shape="square"/>
+</signal>
+<signal name="N$4">
+<via x="20" y="12.5" extent="1-16" drill="0.6"/>
+</signal>
+<signal name="N$5">
+<via x="22.5" y="12.5" extent="1-16" drill="0.6" shape="octagon"/>
 </signal>
 </signals>
 </board>
