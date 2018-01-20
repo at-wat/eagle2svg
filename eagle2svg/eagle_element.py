@@ -365,7 +365,8 @@ class Pad(object):
             view_box.append(
                 17,
                 ('<rect x="%f" y="%f" width="%f" height="%f"'
-                 + ' fill="green" stroke="none" transform="rotate(%f %f %f)"/>')
+                 + ' fill="green" stroke="none"'
+                 + ' transform="rotate(%f %f %f)"/>')
                 % (xy.x - self.diameter / 2.0, -xy.y - self.diameter / 2.0,
                    self.diameter,  self.diameter, -xy.rot, xy.x, -xy.y))
         elif self.shape == 'octagon':
@@ -374,7 +375,8 @@ class Pad(object):
                 17,
                 ('<polygon points="%f,%f %f,%f %f,%f %f,%f'
                  + ' %f,%f %f,%f %f,%f %f,%f"'
-                 + ' fill="green" stroke="none" transform="rotate(%f %f %f)"/>')
+                 + ' fill="green" stroke="none"'
+                 + ' transform="rotate(%f %f %f)"/>')
                 % (xy.x - d, -xy.y - self.diameter / 2.0,
                    xy.x + d, -xy.y - self.diameter / 2.0,
                    xy.x + self.diameter / 2.0, -xy.y - d,
