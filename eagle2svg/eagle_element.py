@@ -351,7 +351,7 @@ class Pad(object):
                rot=0,
                mirror=False,
                view_box=None):
-        xy = Vec2r(self.x, self.y)
+        xy = Vec2r(self.x, self.y, self.rot)
         rotate(xy, Vec2r(x, y), rot, mirror)
         view_box.expand(xy.x - self.diameter, -xy.y - self.diameter)
         view_box.expand(xy.x + self.diameter, -xy.y + self.diameter)
