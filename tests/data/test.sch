@@ -5856,6 +5856,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <part name="R1" library="rcl" deviceset="R-US_" device="R0402" value="1k"/>
 <part name="PAD1" library="pad" deviceset="PAD" device="LONG"/>
 <part name="PAD2" library="pad" deviceset="PAD" device="OFFSET"/>
+<part name="PAD3" library="pad" deviceset="PAD" device="OFFSET"/>
 </parts>
 <sheets>
 <sheet>
@@ -5868,6 +5869,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <instance part="R1" gate="G$1" x="93.98" y="81.28"/>
 <instance part="PAD1" gate="G" x="71.12" y="81.28" rot="R90"/>
 <instance part="PAD2" gate="G" x="68.58" y="81.28" rot="R90"/>
+<instance part="PAD3" gate="G" x="73.66" y="81.28" rot="R90"/>
 </instances>
 <busses>
 </busses>
