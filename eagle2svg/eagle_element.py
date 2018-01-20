@@ -80,6 +80,7 @@ def rotate(xy, trans, rot, mirror=False):
     cos = math.cos(ang)
     xy.x = orig.x * cos - orig.y * sin + trans.x
     xy.y = orig.x * sin + orig.y * cos + trans.y
+    xy.rot += math.degrees(ang)
 
 
 def align_mirror(align):
@@ -364,16 +365,18 @@ class Pad(object):
             view_box.append(
                 17,
                 ('<rect x="%f" y="%f" width="%f" height="%f"'
-                 + ' fill="green" stroke="none" transform="rotate(%f 0 0)"/>')
+                 + ' fill="green" stroke="none"'
+                 + ' transform="rotate(%f %f %f)"/>')
                 % (xy.x - self.diameter / 2.0, -xy.y - self.diameter / 2.0,
-                   self.diameter,  self.diameter, -xy.rot))
+                   self.diameter,  self.diameter, -xy.rot, xy.x, -xy.y))
         elif self.shape == 'octagon':
             d = 0.5 * self.diameter / (math.sqrt(2) + 1)
             view_box.append(
                 17,
                 ('<polygon points="%f,%f %f,%f %f,%f %f,%f'
                  + ' %f,%f %f,%f %f,%f %f,%f"'
-                 + ' fill="green" stroke="none" transform="rotate(%f 0 0)"/>')
+                 + ' fill="green" stroke="none"'
+                 + ' transform="rotate(%f %f %f)"/>')
                 % (xy.x - d, -xy.y - self.diameter / 2.0,
                    xy.x + d, -xy.y - self.diameter / 2.0,
                    xy.x + self.diameter / 2.0, -xy.y - d,
@@ -382,7 +385,43 @@ class Pad(object):
                    xy.x - d, -xy.y + self.diameter / 2.0,
                    xy.x - self.diameter / 2.0, -xy.y + d,
                    xy.x - self.diameter / 2.0, -xy.y - d,
-                   -xy.rot))
+                   -xy.rot, xy.x, -xy.y))
+        if self.shape == 'long':
+            view_box.append(
+                17,
+                ('<path d="M%f %f '
+                 + 'L%f %f '
+                 + 'A%f %f 0 0 1 %f %f '
+                 + 'L%f %f '
+                 + 'A%f %f 0 0 1 %f %f '
+                 + 'Z" stroke="none" fill="green" '
+                 + 'transform="rotate(%f %f %f)"/>')
+                % (xy.x - self.diameter / 2.0, -xy.y - self.diameter / 2.0,
+                    xy.x + self.diameter / 2.0, -xy.y - self.diameter / 2.0,
+                    self.diameter / 2.0, self.diameter / 2.0,
+                    xy.x + self.diameter / 2.0, -xy.y + self.diameter / 2.0,
+                    xy.x - self.diameter / 2.0, -xy.y + self.diameter / 2.0,
+                    self.diameter / 2.0, self.diameter / 2.0,
+                    xy.x - self.diameter / 2.0, -xy.y - self.diameter / 2.0,
+                    -xy.rot, xy.x, -xy.y))
+        if self.shape == 'offset':
+            view_box.append(
+                17,
+                ('<path d="M%f %f '
+                 + 'L%f %f '
+                 + 'A%f %f 0 0 1 %f %f '
+                 + 'L%f %f '
+                 + 'A%f %f 0 0 1 %f %f '
+                 + 'Z" stroke="none" fill="green" '
+                 + 'transform="rotate(%f %f %f)"/>')
+                % (xy.x, -xy.y - self.diameter / 2.0,
+                    xy.x + self.diameter, -xy.y - self.diameter / 2.0,
+                    self.diameter / 2.0, self.diameter / 2.0,
+                    xy.x + self.diameter, -xy.y + self.diameter / 2.0,
+                    xy.x, -xy.y + self.diameter / 2.0,
+                    self.diameter / 2.0, self.diameter / 2.0,
+                    xy.x, -xy.y - self.diameter / 2.0,
+                    -xy.rot, xy.x, -xy.y))
         view_box.append(
             17, '<circle cx="%f" cy="%f" r="%f" fill="black" stroke="none"/>'
             % (xy.x, -xy.y, self.drill / 2.0))
