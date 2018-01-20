@@ -5854,8 +5854,8 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <part name="FRAME1" library="frames" deviceset="A5L-LOC" device=""/>
 <part name="C1" library="rcl" deviceset="C-EU" device="C0402" value="1u"/>
 <part name="R1" library="rcl" deviceset="R-US_" device="R0402" value="1k"/>
-<part name="U$1" library="pad" deviceset="PAD" device="LONG"/>
-<part name="U$2" library="pad" deviceset="PAD" device="OFFSET"/>
+<part name="PAD1" library="pad" deviceset="PAD" device="LONG"/>
+<part name="PAD2" library="pad" deviceset="PAD" device="OFFSET"/>
 </parts>
 <sheets>
 <sheet>
@@ -5866,8 +5866,8 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <instance part="FRAME1" gate="G$1" x="0" y="0"/>
 <instance part="C1" gate="G$1" x="101.6" y="73.66"/>
 <instance part="R1" gate="G$1" x="93.98" y="81.28"/>
-<instance part="U$1" gate="G" x="71.12" y="81.28" rot="R90"/>
-<instance part="U$2" gate="G" x="68.58" y="81.28" rot="R90"/>
+<instance part="PAD1" gate="G" x="71.12" y="81.28" rot="R90"/>
+<instance part="PAD2" gate="G" x="68.58" y="81.28" rot="R90"/>
 </instances>
 <busses>
 </busses>
