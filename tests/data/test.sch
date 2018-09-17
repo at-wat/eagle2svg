@@ -5814,6 +5814,10 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <symbol name="PAD">
 <pin name="PAD" x="-2.54" y="0" visible="pin" length="short" direction="pas"/>
 </symbol>
+<symbol name="REPLACE">
+<text x="0" y="0" size="1.27" layer="95">&gt;name</text>
+<text x="0" y="-2.54" size="1.27" layer="95">&gt;NAME</text>
+</symbol>
 </symbols>
 <devicesets>
 <deviceset name="PAD">
@@ -5839,6 +5843,18 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 </device>
 </devices>
 </deviceset>
+<deviceset name="REPLACE-TEST" prefix="TEST">
+<gates>
+<gate name="TEST" symbol="REPLACE" x="0" y="2.54"/>
+</gates>
+<devices>
+<device name="">
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
 </devicesets>
 </library>
 </libraries>
@@ -5857,11 +5873,13 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <part name="PAD1" library="pad" deviceset="PAD" device="LONG"/>
 <part name="PAD2" library="pad" deviceset="PAD" device="OFFSET"/>
 <part name="PAD3" library="pad" deviceset="PAD" device="OFFSET"/>
+<part name="TEST1" library="pad" deviceset="REPLACE-TEST" device=""/>
 </parts>
 <sheets>
 <sheet>
 <plain>
 <text x="88.9" y="93.98" size="1.778" layer="95">Test data</text>
+<text x="132.08" y="93.98" size="1.778" layer="95">Text replace test</text>
 </plain>
 <instances>
 <instance part="FRAME1" gate="G$1" x="0" y="0"/>
@@ -5870,6 +5888,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <instance part="PAD1" gate="G" x="71.12" y="81.28" rot="R90"/>
 <instance part="PAD2" gate="G" x="68.58" y="81.28" rot="R90"/>
 <instance part="PAD3" gate="G" x="73.66" y="81.28" rot="R90"/>
+<instance part="TEST1" gate="TEST" x="132.08" y="86.36"/>
 </instances>
 <busses>
 </busses>
