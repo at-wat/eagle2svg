@@ -648,7 +648,7 @@ class Text(object):
             view_box.expand(xy.x, -xy.y)
             text = self.text
             if self.text.upper() in replace:
-                text = replace[self.text]
+                text = replace[self.text.upper()]
             view_box.append(
                 layer,
                 render_text(
