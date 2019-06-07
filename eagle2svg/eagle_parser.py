@@ -11,7 +11,10 @@ class EagleFileBase(object):
         self.libraries = {}
         for library_data in eagle_types.named_array(data['libraries']):
             library = eagle_element.Library(library_data)
-            self.libraries[library.name] = library
+            if library.name in self.libraries:
+                self.libraries[library.name].append(library)
+            else:
+                self.libraries[library.name] = library
 
 
 class Board(EagleFileBase):

@@ -1074,6 +1074,11 @@ class Library(object):
                 package = Package(package_data)
                 self.packages[package.name] = package
 
+    def append(self, lib):
+        self.symbols.update(lib.symbols)
+        self.devicesets.update(lib.devicesets)
+        self.packages.update(lib.packages)
+
 
 class Part(object):
     def __init__(self, data):
