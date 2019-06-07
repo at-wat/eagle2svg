@@ -5834,6 +5834,8 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 </deviceset>
 </devicesets>
 </library>
+</libraries>
+<libraries>
 <library name="pad">
 <packages>
 <package name="LONG">
