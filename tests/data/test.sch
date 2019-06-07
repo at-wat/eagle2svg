@@ -5820,29 +5820,39 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 </symbol>
 </symbols>
 <devicesets>
-<deviceset name="PAD">
+<deviceset name="REPLACE-TEST" prefix="TEST">
 <gates>
-<gate name="G" symbol="PAD" x="2.54" y="0"/>
+<gate name="TEST" symbol="REPLACE" x="0" y="2.54"/>
 </gates>
 <devices>
-<device name="LONG" package="LONG">
-<connects>
-<connect gate="G" pin="PAD" pad="1"/>
-</connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-<device name="OFFSET" package="OFFSET">
-<connects>
-<connect gate="G" pin="PAD" pad="1"/>
-</connects>
+<device name="">
 <technologies>
 <technology name=""/>
 </technologies>
 </device>
 </devices>
 </deviceset>
+</devicesets>
+</library>
+<library name="pad">
+<packages>
+<package name="LONG">
+<pad name="1" x="0" y="0" drill="0.6" shape="long"/>
+</package>
+<package name="OFFSET">
+<pad name="1" x="0" y="0" drill="0.6" shape="offset"/>
+</package>
+</packages>
+<symbols>
+<symbol name="PAD">
+<pin name="PAD" x="-2.54" y="0" visible="pin" length="short" direction="pas"/>
+</symbol>
+<symbol name="REPLACE">
+<text x="0" y="0" size="1.27" layer="95">&gt;name</text>
+<text x="0" y="-2.54" size="1.27" layer="95">&gt;NAME</text>
+</symbol>
+</symbols>
+<devicesets>
 <deviceset name="REPLACE-TEST" prefix="TEST">
 <gates>
 <gate name="TEST" symbol="REPLACE" x="0" y="2.54"/>
