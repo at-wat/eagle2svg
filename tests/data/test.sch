@@ -5820,12 +5820,23 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 </symbol>
 </symbols>
 <devicesets>
-<deviceset name="REPLACE-TEST" prefix="TEST">
+<deviceset name="PAD">
 <gates>
-<gate name="TEST" symbol="REPLACE" x="0" y="2.54"/>
+<gate name="G" symbol="PAD" x="2.54" y="0"/>
 </gates>
 <devices>
-<device name="">
+<device name="LONG" package="LONG">
+<connects>
+<connect gate="G" pin="PAD" pad="1"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="OFFSET" package="OFFSET">
+<connects>
+<connect gate="G" pin="PAD" pad="1"/>
+</connects>
 <technologies>
 <technology name=""/>
 </technologies>
