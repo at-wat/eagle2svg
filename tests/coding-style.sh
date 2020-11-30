@@ -26,6 +26,7 @@ then
 \`\`\`
 $(cat ${LOG})
 \`\`\`"
+  sleep 5
   false
 fi
 echo 'passed'
