@@ -1,0 +1,13 @@
+name: hide-old-bot-comments
+on: pull_request
+
+jobs:
+  hide-old-bot-comments:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Hide old bot comments
+        uses: kamatama41/hide-pr-comments-action@v0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          message_regex: "(Passed|Failed) on"

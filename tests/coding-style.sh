@@ -2,7 +2,7 @@
 
 set -eu
 
-PY=`find . -type d -name build -prune -o -name "*.py" -print | tr '\n' ' '`
+PY=$(find . -type d -name build -prune -o -name "*.py" -print | tr '\n' ' ')
 echo "pyflakes targets: ${PY}"
 
 LOG=/tmp/coding-style.log
@@ -15,8 +15,8 @@ do
   pyflakes ${py} >> ${LOG} || fail=1; true
 done
 
-FAILED="Failed on python ${TRAVIS_PYTHON_VERSION}"
-PASSED="Passed on python ${TRAVIS_PYTHON_VERSION}"
+FAILED="Failed on $(python --version)"
+PASSED="Passed on $(python --version)"
 
 if [ $fail -eq 1 ]
 then
@@ -24,8 +24,9 @@ then
   gh-pr-comment "${FAILED}" \
     "style check failed.
 \`\`\`
-`cat ${LOG}`
+$(cat ${LOG})
 \`\`\`"
+  sleep 5
   false
 fi
 echo 'passed'
