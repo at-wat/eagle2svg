@@ -2,8 +2,8 @@
 
 set -eu
 
-FAILED="Failed on python ${TRAVIS_PYTHON_VERSION}"
-PASSED="Passed on python ${TRAVIS_PYTHON_VERSION}"
+FAILED="Failed on python $(python --version)"
+PASSED="Passed on python $(python --version)"
 
 eagle2svg ./tests/data/test.sch > test.sch.svg \
   || (gh-pr-comment "${FAILED}" '`eagle2svg ./tests/data/test.sch` failed.'; false)
@@ -21,13 +21,13 @@ cairosvg -f png -d 450 -o test-bottom.brd.png test-bottom.brd.svg \
 
 if [ "${TRAVIS_PULL_REQUEST}" != "false" ];
 then
-  image1=`gh-pr-upload test.sch.png`
-  image2=`gh-pr-upload test-top.brd.png`
-  image3=`gh-pr-upload test-bottom.brd.png`
+  image1=$(gh-pr-upload test.sch.png)
+  image2=$(gh-pr-upload test-top.brd.png)
+  image3=$(gh-pr-upload test-bottom.brd.png)
 
   gh-pr-comment "${PASSED}" "all tests passed
 \`\`\`
-`ls -lh *.svg *.png`
+$(ls -lh *.svg *.png)
 \`\`\`
 
 ![test.sch.png](${image1})
