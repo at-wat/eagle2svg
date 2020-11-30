@@ -19,7 +19,7 @@ cairosvg -f png -d 450 -o test-top.brd.png test-top.brd.svg \
 cairosvg -f png -d 450 -o test-bottom.brd.png test-bottom.brd.svg \
   || (gh-pr-comment "${FAILED}" '`cairosvg -f png test.sch.svg` failed.'; false)
 
-if [ "${TRAVIS_PULL_REQUEST}" != "false" ];
+if [ "${GITHUB_EVENT_NAME}" = "pull_request" ];
 then
   image1=$(gh-pr-upload test.sch.png)
   image2=$(gh-pr-upload test-top.brd.png)
