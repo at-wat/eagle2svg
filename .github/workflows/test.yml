@@ -23,10 +23,19 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install gh-pr-comment
+        run: |
+          curl -sL https://raw.githubusercontent.com/at-wat/gh-pr-comment/master/install.sh | sh -s
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Lint
         run: |
-          python -m pip install cairosvg==1.0.22 pycodestyle pyflakes gh-pr-comment
+          python -m pip install cairosvg==1.0.22 pycodestyle pyflakes
           ./tests/coding-style.sh
           python setup.py install
       - name: Test
         run: ./tests/exec-test.sh
+        env:
+          ALLOW_PUBLIC_UPLOADER: 1
+          GITHUB_API_URL_BASE: https://ghbot-api.at-wat.tokyo
+          GITHUB_TOKEN: bfac2435-4211-42ee-a1d6-0dfaf6b3b73d
