@@ -276,9 +276,9 @@ class Label(object):
             if data['@rot'][0] == 'M':
                 self.mirror = True
                 if data['@rot'][1] == 'R':
-                    self.rot = int(data['@rot'][2:])
+                    self.rot = float(data['@rot'][2:])
             elif data['@rot'][0] == 'R':
-                self.rot = int(data['@rot'][1:])
+                self.rot = float(data['@rot'][1:])
 
     def render(self,
                view_box=None,
@@ -341,9 +341,9 @@ class Pad(object):
             if data['@rot'][0] == 'M':
                 self.mirror = True
                 if data['@rot'][1] == 'R':
-                    self.rot = int(data['@rot'][2:])
+                    self.rot = float(data['@rot'][2:])
             elif data['@rot'][0] == 'R':
-                self.rot = int(data['@rot'][1:])
+                self.rot = float(data['@rot'][1:])
 
     def render(self,
                x=0.0,
@@ -626,9 +626,9 @@ class Text(object):
             if data['@rot'][0] == 'M':
                 self.mirror = True
                 if data['@rot'][1] == 'R':
-                    self.rot = int(data['@rot'][2:])
+                    self.rot = float(data['@rot'][2:])
             elif data['@rot'][0] == 'R':
-                self.rot = int(data['@rot'][1:])
+                self.rot = float(data['@rot'][1:])
 
     def render(self,
                x=0.0,
@@ -678,9 +678,9 @@ class Pin(object):
             if data['@rot'][0] == 'M':
                 self.mirror = True
                 if data['@rot'][1] == 'R':
-                    self.rot = int(data['@rot'][2:])
+                    self.rot = float(data['@rot'][2:])
             elif data['@rot'][0] == 'R':
-                self.rot = int(data['@rot'][1:])
+                self.rot = float(data['@rot'][1:])
 
     def render(self,
                x=0.0,
@@ -1106,9 +1106,9 @@ class Element(object):
             if data['@rot'][0] == 'M':
                 self.mirror = True
                 if data['@rot'][1] == 'R':
-                    self.rot = int(data['@rot'][2:])
+                    self.rot = float(data['@rot'][2:])
             elif data['@rot'][0] == 'R':
-                self.rot = int(data['@rot'][1:])
+                self.rot = float(data['@rot'][1:])
         if '@smashed' in data:
             if data['@smashed'] == 'yes':
                 self.smashed = True
@@ -1151,9 +1151,9 @@ class Instance(object):
             if data['@rot'][0] == 'M':
                 self.mirror = True
                 if data['@rot'][1] == 'R':
-                    self.rot = int(data['@rot'][2:])
+                    self.rot = float(data['@rot'][2:])
             elif data['@rot'][0] == 'R':
-                self.rot = int(data['@rot'][1:])
+                self.rot = float(data['@rot'][1:])
         if '@smashed' in data:
             if data['@smashed'] == 'yes':
                 self.smashed = True
