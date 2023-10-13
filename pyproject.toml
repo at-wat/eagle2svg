@@ -1,6 +1,6 @@
 [project]
 name = "eagle2svg"
-version = "0.1.4"
+version = "0.1.5"
 description = "Eagle CAD file to svg renderer"
 authors = [
     {name = "Atsushi Watanabe", email = "atsushi.w@ieee.org"},
