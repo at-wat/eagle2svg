@@ -38,7 +38,7 @@ jobs:
           ./tests/coding-style.sh
       - name: Test
         run: |
-          python setup.py install
+          python -m pip install .
           ./tests/exec-test.sh
           sleep 5
         env:
