@@ -31,6 +31,8 @@ $(ls -lh *.svg *.png)
 \`\`\`
 
 ![test.sch.png](${image1})
-![test-top.brd.png](${image2})
-![test-bottom.brd.png](${image3})"
+top | bottom
+--- | ---
+![test-top.brd.png](${image2}) | ![test-bottom.brd.png](${image3})
+"
 fi

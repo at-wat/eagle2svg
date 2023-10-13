@@ -1,0 +1,19 @@
+[project]
+name = "eagle2svg"
+version = "0.1.4"
+description = "Eagle CAD file to svg renderer"
+authors = [
+    {name = "Atsushi Watanabe", email = "atsushi.w@ieee.org"},
+]
+dependencies = [
+    "xmltodict",
+]
+requires-python = ">=3.8"
+readme = "README.md"
+license = {text = "BSD"}
+
+[project.urls]
+Homepage = "https://github.com/at-wat/eagle2svg"
+
+[project.scripts]
+eagle2svg = "eagle2svg.render:render_main"
