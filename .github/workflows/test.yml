@@ -30,6 +30,7 @@ jobs:
       - name: Test
         run: |
           python -m pip install .
+          python -m pip install cairosvg==1.0.22
           ./tests/exec-test.sh
           sleep 5
         env:
@@ -44,7 +45,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
       - name: Install linters
-        run: python -m pip install cairosvg==1.0.22 pycodestyle pyflakes
+        run: python -m pip install pycodestyle pyflakes
       - name: Lint
         run: ./tests/coding-style.sh
   build:
