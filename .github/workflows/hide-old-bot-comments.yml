@@ -5,7 +5,7 @@ jobs:
   hide-old-bot-comments:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Hide old bot comments
         uses: kamatama41/hide-pr-comments-action@v0
         with:
