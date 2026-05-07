@@ -49,6 +49,9 @@ jobs:
         run: python -m pip install pycodestyle pyflakes
       - name: Lint
         run: ./tests/coding-style.sh
+        env:
+          GITHUB_API_URL_BASE: https://ghbot-api.at-wat.tokyo
+          GITHUB_TOKEN: bfac2435-4211-42ee-a1d6-0dfaf6b3b73d
   build:
     runs-on: ubuntu-latest
     steps:

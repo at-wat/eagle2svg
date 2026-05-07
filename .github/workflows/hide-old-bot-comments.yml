@@ -1,6 +1,9 @@
 name: hide-old-bot-comments
 on: pull_request
 
+permissions:
+  pull-requests: write
+
 jobs:
   hide-old-bot-comments:
     runs-on: ubuntu-latest
