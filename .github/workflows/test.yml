@@ -44,6 +44,7 @@ jobs:
         uses: actions/checkout@v6
       - name: Setup Python
         uses: actions/setup-python@v6
+      - uses: at-wat/setup-gh-pr-comment@v0
       - name: Install linters
         run: python -m pip install pycodestyle pyflakes
       - name: Lint
