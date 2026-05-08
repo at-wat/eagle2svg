@@ -169,12 +169,9 @@ def render_text(text, xy, size, color,
             if len_max < len(line):
                 len_max = len(line)
         height = len(lines) * size
-        if anchor == 'start':
-            transforms = transforms \
-                + ' translate(%f 0)' % (len_max * size * 0.65)
-        elif anchor == 'end':
-            transforms = transforms \
-                + ' translate(%f 0)' % (-len_max * size * 0.65)
+        # For multi-line text, no extra translation needed
+        # The tspans have their own text-anchor attribute set to 'align'
+        # which handles the positioning correctly at x="0"
         text_option = ' height="%f" text-anchor="%s"' % (height, anchor)
 
     if valign != 0.0:
@@ -855,6 +852,9 @@ class VisualElementBase(object):
         self.pins = []
         self.smds = []
         self.signal_fill = False
+        # Handle empty/None data (e.g., empty sheet plain sections)
+        if data is None:
+            return
         if 'wire' in data:
             for wire_data in eagle_types.array(data['wire']):
                 self.wires.append(Wire(wire_data))
@@ -1194,7 +1194,17 @@ class Instance(object):
 
 class Bus(object):
     def __init__(self, data):
-        pass
+        self.name = data['@name']
+        self.segments = []
+        if 'segment' in data:
+            for segment_data in eagle_types.array(data['segment']):
+                self.segments.append(Segment(segment_data))
+
+    def render(self,
+               view_box=None):
+        for segment in self.segments:
+            segment.render(view_box=view_box,
+                           net_name=self.name)
 
 
 class Segment(object):
@@ -1242,12 +1252,10 @@ class Net(object):
 
 class Sheet(object):
     def __init__(self, data):
-        self.plains = []
+        self.plain = Plain(data['plain'])
         self.instances = []
         self.busses = []
         self.nets = []
-        for plain_data in eagle_types.named_array(data['plain']):
-            self.plains.append(Plain(plain_data))
         for instance_data in eagle_types.named_array(data['instances']):
             self.instances.append(Instance(instance_data))
         for bus_data in eagle_types.named_array(data['busses']):
@@ -1260,8 +1268,12 @@ class Sheet(object):
                parts={},
                replace={},
                view_box=None):
+        self.plain.render(view_box=view_box,
+                         replace=replace)
         for net in self.nets:
             net.render(view_box=view_box)
+        for bus in self.busses:
+            bus.render(view_box=view_box)
         for instance in self.instances:
             instance.render(libraries=libraries,
                             parts=parts,
