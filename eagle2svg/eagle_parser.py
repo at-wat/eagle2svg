@@ -48,10 +48,15 @@ class Board(EagleFileBase):
         for key, signal in self.signals.items():
             signal.render(view_box=view_box)
 
-        view_box.x1 = view_box.x1 - 1
-        view_box.y1 = view_box.y1 - 1
-        view_box.x2 = view_box.x2 + 1
-        view_box.y2 = view_box.y2 + 1
+        # Add 5% margin around the schematic
+        width = view_box.x2 - view_box.x1
+        height = view_box.y2 - view_box.y1
+        margin_x = width * 0.05
+        margin_y = height * 0.05
+        view_box.x1 = view_box.x1 - margin_x
+        view_box.y1 = view_box.y1 - margin_y
+        view_box.x2 = view_box.x2 + margin_x
+        view_box.y2 = view_box.y2 + margin_y
 
         print('<?xml version="1.0"?>')
         print('<svg version="1.1" xmlns="http://www.w3.org/2000/svg"'
@@ -97,10 +102,15 @@ class Schematic(EagleFileBase):
                                   replace=replace2,
                                   view_box=view_box)
 
-        view_box.x1 = view_box.x1 - 1
-        view_box.y1 = view_box.y1 - 1
-        view_box.x2 = view_box.x2 + 1
-        view_box.y2 = view_box.y2 + 1
+        # Add 5% margin around the schematic
+        width = view_box.x2 - view_box.x1
+        height = view_box.y2 - view_box.y1
+        margin_x = width * 0.05
+        margin_y = height * 0.05
+        view_box.x1 = view_box.x1 - margin_x
+        view_box.y1 = view_box.y1 - margin_y
+        view_box.x2 = view_box.x2 + margin_x
+        view_box.y2 = view_box.y2 + margin_y
 
         print('<?xml version="1.0"?>')
         print('<svg version="1.1" xmlns="http://www.w3.org/2000/svg"'
